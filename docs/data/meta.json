@@ -1,6 +1,6 @@
 {
-  "generatedAt": 1789499700534,
-  "durationMs": 8183,
+  "generatedAt": 1789509287976,
+  "durationMs": 8151,
   "sources": {
     "hyperliquid": {
       "ok": true,
@@ -12,7 +12,7 @@
     },
     "gmx:avalanche": {
       "ok": true,
-      "traders": 9
+      "traders": 8
     },
     "okx": {
       "ok": true,
@@ -24,8 +24,8 @@
     }
   },
   "totals": {
-    "traders": 143,
-    "positions": 769,
-    "notional": 1633842494.6175048
+    "traders": 142,
+    "positions": 768,
+    "notional": 1606660656.1855888
   }
 }
