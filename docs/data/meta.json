@@ -1,10 +1,10 @@
 {
-  "generatedAt": 1789498187371,
-  "durationMs": 6301,
+  "generatedAt": 1789498528547,
+  "durationMs": 6013,
   "sources": {
     "hyperliquid": {
       "ok": true,
-      "traders": 60
+      "traders": 58
     },
     "gmx:arbitrum": {
       "ok": true,
@@ -20,8 +20,8 @@
     }
   },
   "totals": {
-    "traders": 121,
-    "positions": 658,
-    "notional": 1614401230.7583427
+    "traders": 119,
+    "positions": 715,
+    "notional": 1663601880.6551197
   }
 }
