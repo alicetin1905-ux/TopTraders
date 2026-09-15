@@ -26,7 +26,7 @@ const state = {
   search: '',
   sort: 'notional',
   sortDir: -1,
-  minSize: 1_000_000,
+  minSize: 0,
   expanded: new Set(),
   lastPrice: 0,
   priceError: null,
@@ -136,7 +136,7 @@ function visibleTraders() {
   let rows = state.traders
     .filter((t) => state.venueFilter.has(t.venue))
     .map(repriced)
-    .filter((t) => t.totalNotional >= state.minSize || t.venue === 'okx');
+    .filter((t) => t.totalNotional >= state.minSize);
 
   if (q) {
     rows = rows.filter((t) =>
@@ -188,7 +188,10 @@ function renderTiles(rows) {
   const skew = long + short > 0 ? long / (long + short) : 0;
 
   const tiles = [
-    { k: 'Traders tracked', v: String(rows.length), note: `${VENUES.filter((v) => state.venueFilter.has(v.id)).length} exchanges selected` },
+    { k: 'Traders tracked', v: String(rows.length), note: (() => {
+      const n = VENUES.filter((v) => state.venueFilter.has(v.id)).length;
+      return `${n} exchange${n === 1 ? '' : 's'} selected`;
+    })() },
     { k: 'Open positions', v: String(positions), note: 'across all tracked books' },
     { k: 'Total notional', v: usd(notional, { compact: true }), note: 'sum of position value' },
     { k: 'Unrealised PnL', v: usd(upnl, { compact: true, sign: true }), note: 'live, marked to market', cls: cls(upnl) },
@@ -327,11 +330,9 @@ function renderTable(rows) {
     const label = el('span', t.label ? 'name' : 'addr', t.label || shortAddr(t.address));
     label.title = t.address;
     box.append(label);
-    const b = el('span', 'vbadge');
-    const sw = el('span', 'swatch');
-    sw.style.background = `var(--v-${t.venue})`;
-    b.append(sw, document.createTextNode(venue ? venue.name : t.venue));
+    const b = el('span', 'vbadge', venue ? venue.code : t.venue);
     if (t.chain) b.append(document.createTextNode(` · ${t.chain === 'arbitrum' ? 'ARB' : 'AVAX'}`));
+    b.title = venue ? `${venue.name} — ${venue.kind}` : t.venue;
     box.append(b);
     who.append(box);
     tr.append(who);
@@ -435,9 +436,8 @@ function buildChips() {
     const b = el('button', 'chip');
     b.type = 'button';
     b.setAttribute('aria-pressed', state.venueFilter.has(v.id) ? 'true' : 'false');
-    const sw = el('span', 'swatch');
-    sw.style.background = `var(--v-${v.id})`;
-    b.append(sw, document.createTextNode(v.name));
+    if (v.code && v.code !== v.name) b.append(el('span', 'vcode', v.code));
+    b.append(document.createTextNode(v.name));
     b.title = v.live ? `${v.kind} — positions refresh live in your browser` : `${v.kind} — ${v.note || 'snapshot only'}`;
     b.addEventListener('click', () => {
       if (state.venueFilter.has(v.id)) state.venueFilter.delete(v.id);

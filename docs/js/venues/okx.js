@@ -16,6 +16,7 @@ const BASE = 'https://www.okx.com/api/v5/copytrading';
 export const meta = {
   id: 'okx',
   name: 'OKX',
+  code: 'OKX',
   kind: 'CEX (copy-trading)',
   live: false,
   fields: ['side', 'pnl', 'roe', 'margin', 'leverage'],

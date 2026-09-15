@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 import * as hl from '../docs/js/venues/hyperliquid.js';
 import * as gmx from '../docs/js/venues/gmx.js';
 import * as okx from '../docs/js/venues/okx.js';
+import * as htx from '../docs/js/venues/htx.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'docs/data');
@@ -25,6 +26,8 @@ const HL_CANDIDATES = Number(process.env.HL_CANDIDATES || 220);
 const HL_KEEP = Number(process.env.HL_KEEP || 60);
 const GMX_KEEP = Number(process.env.GMX_KEEP || 40);
 const OKX_KEEP = Number(process.env.OKX_KEEP || 20);
+const HTX_KEEP = Number(process.env.HTX_KEEP || 25);
+const HTX_CANDIDATES = Number(process.env.HTX_CANDIDATES || 80);
 const CONCURRENCY = Number(process.env.CONCURRENCY || 8);
 
 const log = (...a) => console.log('[refresh]', ...a);
@@ -180,7 +183,7 @@ async function buildOkx() {
       address: l.uniqueCode,
       label: l.nickName,
       link: `https://www.okx.com/copy-trading/account/${l.uniqueCode}`,
-      accountValue: st.accountValue,
+      accountValue: l.aum || st.accountValue,
       totalNotional: st.totalNotional,
       totalMarginUsed: st.totalMarginUsed,
       pnlDay: 0,
@@ -197,6 +200,48 @@ async function buildOkx() {
   return traders;
 }
 
+/* ----------------------------------- HTX ---------------------------------- */
+
+async function buildHtx() {
+  log('htx: contract table + lead traders\u2026');
+  const [contracts, leaders] = await Promise.all([
+    retry(() => htx.fetchContracts()),
+    retry(() => htx.fetchLeaderboard(HTX_CANDIDATES)),
+  ]);
+  log(`htx: probing ${leaders.length} lead traders for open positions\u2026`);
+  const states = await pool(leaders, (l) => retry(() => htx.fetchTrader(l.userSign, contracts), 2, 1500), 5);
+
+  const traders = [];
+  for (let i = 0; i < leaders.length; i++) {
+    const st = states[i];
+    const l = leaders[i];
+    if (!st || st.__error || !st.positions?.length) continue;
+    traders.push({
+      venue: 'htx',
+      id: l.userSign,
+      address: l.userSign,
+      label: l.nickName,
+      link: `https://www.htx.com/en-us/copytrading/futures/trader/${l.userSign}`,
+      accountValue: l.traderAsset || l.aum || st.accountValue,
+      totalNotional: st.totalNotional,
+      totalMarginUsed: st.totalMarginUsed,
+      pnlDay: 0,
+      pnlWeek: 0,
+      pnlMonth: l.profit,
+      roiMonth: l.profitRate,
+      volumeMonth: 0,
+      winRate: l.winRate,
+      aum: l.aum,
+      copyTraders: l.copyUserNum,
+      positions: st.positions,
+    });
+  }
+  traders.sort((a, b) => b.totalNotional - a.totalNotional);
+  const kept = traders.slice(0, HTX_KEEP);
+  log(`htx: kept ${kept.length} traders with open positions`);
+  return kept;
+}
+
 /* ---------------------------------- main ---------------------------------- */
 
 async function main() {
@@ -208,6 +253,7 @@ async function main() {
     ['gmx:arbitrum', buildGmxChain('arbitrum')],
     ['gmx:avalanche', buildGmxChain('avalanche')],
     ['okx', buildOkx()],
+    ['htx', buildHtx()],
   ];
 
   const results = await Promise.allSettled(tasks.map(([, p]) => p));

@@ -27,9 +27,6 @@
   --bad:         #d03b3b;
   --warn:        #fab219;
 
-  --v-hyperliquid: #199e70;
-  --v-gmx:         #d95926;
-  --v-okx:         #9085e9;
 
   --radius: 10px;
   --gutter: 16px;
@@ -53,9 +50,6 @@
   --short:     #d03b3b;
   --mid:       #e1e0d9;
   --good:      #006300;
-  --v-hyperliquid: #1baf7a;
-  --v-gmx:         #eb6834;
-  --v-okx:         #4a3aa7;
 }
 
 * { box-sizing: border-box; }
@@ -191,8 +185,15 @@ tr.trader:focus-visible { outline: 2px solid var(--long); outline-offset: -2px; 
 .name { font-size: 12px; color: var(--text); max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .vbadge {
-  display: inline-flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-2);
-  border: 1px solid var(--border); border-radius: 999px; padding: 2px 7px; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.03em;
+  color: var(--text-2); background: var(--surface-3);
+  border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; white-space: nowrap;
+}
+.vcode {
+  font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+  color: var(--text-2); background: var(--surface-3);
+  border-radius: 3px; padding: 1px 4px;
 }
 .caret { display: inline-block; width: 11px; color: var(--muted); transition: transform 0.12s; }
 tr.trader[aria-expanded="true"] .caret { transform: rotate(90deg); }

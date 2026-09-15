@@ -13,6 +13,7 @@ export const LEADERBOARD_URL = 'https://stats-data.hyperliquid.xyz/Mainnet/leade
 export const meta = {
   id: 'hyperliquid',
   name: 'Hyperliquid',
+  code: 'HL',
   kind: 'Perp DEX',
   // Positions can be polled straight from the browser.
   live: true,

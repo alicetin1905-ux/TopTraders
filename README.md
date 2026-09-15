@@ -37,17 +37,19 @@ What is covered, and what each venue gives up:
 |---|---|---|---|
 | **Hyperliquid** | Public PnL leaderboard | Full | On-chain perp DEX — every account's book is public. Refreshes live in the browser. |
 | **GMX v2** (Arbitrum + Avalanche) | Public squid indexer | Full | On-chain. Entry price, size, collateral and PnL all public. Refreshes live in the browser. |
-| **OKX** | Public copy-trading leaderboard | Partial | OKX returns side, leverage, margin, uPnL and PnL ratio, but **masks instrument, entry price and size** for non-copiers. It also sends no CORS headers, so these values come from the server-side snapshot rather than live browser polling. |
+| **HTX** (formerly Huobi) | Public copy-trading leaderboard (~367 lead traders) | Full | Publishes lead traders' complete books — instrument, entry, mark, size, leverage, margin, liquidation price and funding. Sends no CORS headers, so values come from the snapshot. Sizes are quoted in contracts and converted via the public contract-size table. |
+| **OKX** | Public copy-trading leaderboard | Partial | OKX returns side, leverage, margin, uPnL and PnL ratio, but **masks instrument, entry price and size** for non-copiers. Also sends no CORS headers, so these values come from the snapshot. |
 
 Evaluated and **not** included, with the reason:
 
+- **Coinbase** — runs no copy-trading or social-trading product and publishes no trader leaderboard. Advanced Trade and Coinbase International expose market data only (products, candles, order book); positions are returned solely to the authenticated owner of an account. There is no public endpoint to build this from.
 - **Binance** — retired its public futures leaderboard API (now `404`); copy-trading portfolios require an authenticated session.
 - **Bybit** — public copy-trading leaderboard returns `Access Denied` to server-side callers.
 - **dYdX v4** — the indexer geo-blocks datacenter and many retail IPs (`403 GEOBLOCKED`).
 - **Paradex / Aster** — market data is public, but per-trader positions need an authenticated API key.
 
-There is no way to show a Binance or Bybit trader's live position without that
-venue publishing it; the dashboard states this in the footer rather than
+There is no way to show a Coinbase or Binance trader's live position without
+that venue publishing it; the dashboard states this in the footer rather than
 quietly showing fewer exchanges than promised.
 
 ## How it works
@@ -58,13 +60,13 @@ GitHub Actions (every 15 min)          Browser (every 15 s)
 │ scripts/refresh.mjs        │         │ docs/js/app.js               │
 │  • HL leaderboard (~37 MB) │ ──────▶ │  • loads snapshot.json       │
 │  • GMX position sweep      │ commits │  • polls allMids + tickers   │
-│  • OKX lead traders        │  JSON   │  • re-prices every position  │
+│  • OKX + HTX lead traders  │  JSON   │  • re-prices every position  │
 └────────────────────────────┘         └──────────────────────────────┘
 ```
 
 Two things can't be done from the browser, which is why there's a pipeline at
-all: Hyperliquid's leaderboard is a ~37 MB payload, and OKX sends no CORS
-headers. Everything else is fetched client-side.
+all: Hyperliquid's leaderboard is a ~37 MB payload, and the two CEXes (OKX and
+HTX) send no CORS headers. Everything else is fetched client-side.
 
 The clever part is the repricing. PnL on a perp is linear in the mark price:
 
@@ -87,7 +89,7 @@ npm run serve     # http://localhost:8080
 No dependencies, no build step, no API keys. Node 20+.
 
 Snapshot size is tunable via env vars: `HL_KEEP`, `GMX_KEEP`, `OKX_KEEP`,
-`HL_CANDIDATES`, `CONCURRENCY`.
+`HTX_KEEP`, `HL_CANDIDATES`, `HTX_CANDIDATES`, `CONCURRENCY`.
 
 ## Layout
 
@@ -115,6 +117,12 @@ green/red. Green/red measures a CVD separation of ΔE 4.1 for deuteranopia —
 red-green colourblind traders cannot tell a long from a short. The blue/red pair
 measures ΔE 25.7. PnL keeps green/red but always ships an explicit `+`/`−` sign,
 so the sign carries the meaning and colour only reinforces it.
+
+Venue is deliberately **not** colour-coded. With four exchanges, no categorical
+palette clears the colourblind-separation floors under all-pairs comparison —
+every candidate quartet failed — so venue is shown as a short text code
+(`HL`, `GMX`, `OKX`, `HTX`) in a neutral chip. That keeps the page's colour
+budget on the two things it genuinely encodes: direction and PnL.
 
 ## Caveats
 

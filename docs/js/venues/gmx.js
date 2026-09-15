@@ -27,6 +27,7 @@ export const CHAINS = {
 export const meta = {
   id: 'gmx',
   name: 'GMX v2',
+  code: 'GMX',
   kind: 'Perp DEX',
   live: true,
   fields: ['entry', 'mark', 'size', 'value', 'pnl', 'roe', 'margin', 'leverage'],
