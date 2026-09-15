@@ -1,6 +1,6 @@
 {
-  "generatedAt": 1789499591592,
-  "durationMs": 8493,
+  "generatedAt": 1789499700534,
+  "durationMs": 8183,
   "sources": {
     "hyperliquid": {
       "ok": true,
@@ -26,6 +26,6 @@
   "totals": {
     "traders": 143,
     "positions": 769,
-    "notional": 1638869567.1459382
+    "notional": 1633842494.6175048
   }
 }
