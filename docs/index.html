@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TopTraders — live positions across perp exchanges</title>
+<meta name="description" content="Live dashboard tracking top traders' open positions, PnL, entry price, notional value, margin and leverage across Hyperliquid, GMX v2 and OKX.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <h1>TopTraders</h1>
+      <span class="sub">live positions across perp exchanges</span>
+    </div>
+    <span class="live"><span class="dot" id="statusDot"></span><span id="statusText">connecting…</span></span>
+    <button class="btn" id="refreshBtn" type="button">Refresh</button>
+    <button class="btn" id="themeBtn" type="button" aria-label="Toggle colour theme">Light</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="tiles" id="tiles" aria-label="Aggregate statistics">
+    <div class="tile"><div class="k">Traders tracked</div><div class="v"><div class="skeleton" style="width:62px"></div></div></div>
+    <div class="tile"><div class="k">Open positions</div><div class="v"><div class="skeleton" style="width:62px"></div></div></div>
+    <div class="tile"><div class="k">Total notional</div><div class="v"><div class="skeleton" style="width:88px"></div></div></div>
+    <div class="tile"><div class="k">Unrealised PnL</div><div class="v"><div class="skeleton" style="width:88px"></div></div></div>
+    <div class="tile"><div class="k">Long / short skew</div><div class="v"><div class="skeleton" style="width:72px"></div></div></div>
+  </section>
+
+  <div class="controls">
+    <div class="chips" id="venueChips" role="group" aria-label="Filter by exchange"></div>
+    <input type="search" id="search" placeholder="Search address, name or coin…" aria-label="Search traders and coins">
+    <select id="sort" aria-label="Sort traders by">
+      <option value="notional">Sort: open notional</option>
+      <option value="upnl">Sort: unrealised PnL</option>
+      <option value="account">Sort: account value</option>
+      <option value="pnlMonth">Sort: 30d realised PnL</option>
+      <option value="positions">Sort: position count</option>
+    </select>
+    <select id="minSize" aria-label="Minimum open notional">
+      <option value="0">Any size</option>
+      <option value="100000">Min $100K</option>
+      <option value="1000000" selected>Min $1M</option>
+      <option value="10000000">Min $10M</option>
+    </select>
+  </div>
+
+  <section class="panel" id="crowdPanel">
+    <h2>Crowd positioning <span class="hint">— aggregate exposure of tracked traders, by coin</span></h2>
+    <div class="panel-body">
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--long)"></span>Long</span>
+        <span><span class="swatch" style="background:var(--short)"></span>Short</span>
+        <span style="color:var(--muted)">Bar length = notional exposure · value at right = net</span>
+      </div>
+      <div class="bars" id="bars"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Traders <span class="hint" id="traderCount"></span></h2>
+    <div class="table-scroll">
+      <table id="tradersTable">
+        <thead>
+          <tr>
+            <th class="l" style="width:34px"></th>
+            <th class="l">Trader</th>
+            <th class="sortable hide-xs" data-sort="account">Account value</th>
+            <th class="sortable" data-sort="notional">Open notional</th>
+            <th class="hide-sm">Margin used</th>
+            <th class="hide-sm">Lev.</th>
+            <th class="sortable" data-sort="upnl">Unreal. PnL</th>
+            <th class="sortable hide-sm" data-sort="pnlMonth">30d PnL</th>
+            <th class="sortable" data-sort="positions">Pos.</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="9" class="empty">Loading traders…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <div class="cols">
+      <div>
+        <h3>How this works</h3>
+        <p style="margin-top:0">
+          A scheduled job snapshots each exchange's leaderboard and open positions.
+          The page then re-prices every position in your browser against live oracle
+          and mid prices, so PnL, notional value and ROE stay current between snapshots.
+        </p>
+        <p id="metaLine"></p>
+      </div>
+      <div>
+        <h3>Coverage</h3>
+        <ul id="coverage"></ul>
+      </div>
+      <div>
+        <h3>Not covered</h3>
+        <ul id="unsupported"></ul>
+      </div>
+    </div>
+    <p style="margin-bottom:0">
+      Public exchange data, shown for information only. Not investment advice.
+      Positions are self-reported by each venue and can lag or be partially masked.
+      <a href="https://github.com/alicetin1905-ux/TopTraders">Source on GitHub</a>.
+    </p>
+  </footer>
+
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

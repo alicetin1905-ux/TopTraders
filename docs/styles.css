@@ -1,0 +1,268 @@
+/* TopTraders — palette validated with the dataviz six-checks validator.
+   Direction (LONG/SHORT) uses the blue<->red diverging pair (deutan dE 25.7)
+   rather than the conventional green/red, which fails CVD separation at dE 4.1.
+   PnL keeps green/red but always ships an explicit +/- sign, so the sign — not
+   the hue — carries the meaning. */
+
+:root {
+  color-scheme: dark;
+
+  --page:        #0d0d0d;
+  --surface:     #1a1a19;
+  --surface-2:   #211f1e;
+  --surface-3:   #2a2826;
+
+  --text:        #ffffff;
+  --text-2:      #c3c2b7;
+  --muted:       #898781;
+  --grid:        #2c2c2a;
+  --axis:        #383835;
+  --border:      rgba(255, 255, 255, 0.10);
+
+  --long:        #3987e5;   /* diverging pole A */
+  --short:       #d03b3b;   /* diverging pole B */
+  --mid:         #383835;   /* diverging neutral midpoint */
+
+  --good:        #0ca30c;
+  --bad:         #d03b3b;
+  --warn:        #fab219;
+
+  --v-hyperliquid: #199e70;
+  --v-gmx:         #d95926;
+  --v-okx:         #9085e9;
+
+  --radius: 10px;
+  --gutter: 16px;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page:      #f9f9f7;
+  --surface:   #fcfcfb;
+  --surface-2: #f2f1ed;
+  --surface-3: #e8e7e2;
+  --text:      #0b0b0b;
+  --text-2:    #52514e;
+  --muted:     #6f6d68;
+  --grid:      #e1e0d9;
+  --axis:      #c3c2b7;
+  --border:    rgba(11, 11, 11, 0.12);
+  --long:      #2a78d6;
+  --short:     #d03b3b;
+  --mid:       #e1e0d9;
+  --good:      #006300;
+  --v-hyperliquid: #1baf7a;
+  --v-gmx:         #eb6834;
+  --v-okx:         #4a3aa7;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1440px; margin: 0 auto; padding: 0 var(--gutter) 64px; }
+
+/* ------------------------------- header ---------------------------------- */
+
+header.top {
+  position: sticky; top: 0; z-index: 30;
+  background: color-mix(in srgb, var(--page) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.top-inner {
+  max-width: 1440px; margin: 0 auto; padding: 12px var(--gutter);
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: baseline; gap: 9px; margin-right: auto; }
+.brand h1 { font-size: 17px; margin: 0; letter-spacing: -0.02em; font-weight: 650; }
+.brand .sub { color: var(--muted); font-size: 12px; }
+
+.live { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 70%, transparent); animation: pulse 2s infinite; }
+.dot.stale { background: var(--warn); animation: none; }
+.dot.err { background: var(--bad); animation: none; }
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 60%, transparent); }
+  70%  { box-shadow: 0 0 0 6px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .dot { animation: none; } }
+
+.btn {
+  background: var(--surface-2); color: var(--text-2);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 11px; font-size: 12px; font-family: inherit; cursor: pointer;
+}
+.btn:hover { background: var(--surface-3); color: var(--text); }
+.btn:focus-visible { outline: 2px solid var(--long); outline-offset: 2px; }
+
+/* ------------------------------ stat tiles -------------------------------- */
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr)); gap: 10px; margin-bottom: 18px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 15px; }
+.tile .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+.tile .v { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+.tile .note { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* -------------------------------- controls -------------------------------- */
+
+.controls { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text-2);
+  border-radius: 999px; padding: 5px 12px; font-size: 12px; cursor: pointer; font-family: inherit;
+}
+.chip[aria-pressed="true"] { background: var(--surface-3); color: var(--text); border-color: color-mix(in srgb, var(--text) 26%, transparent); }
+.chip:focus-visible { outline: 2px solid var(--long); outline-offset: 2px; }
+.swatch { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+
+input[type="search"], select {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit;
+}
+input[type="search"] { min-width: 190px; }
+input[type="search"]:focus-visible, select:focus-visible { outline: 2px solid var(--long); outline-offset: 1px; }
+
+/* ------------------------------ crowd chart ------------------------------- */
+
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 18px; overflow: hidden; }
+.panel > h2 {
+  font-size: 13px; margin: 0; padding: 12px 15px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; font-weight: 600;
+}
+.panel > h2 .hint { font-weight: 400; color: var(--muted); font-size: 11px; }
+.panel-body { padding: 13px 15px; }
+
+.legend { display: flex; gap: 14px; font-size: 11px; color: var(--text-2); margin-bottom: 12px; }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+
+.bars { display: grid; gap: 7px; }
+.bar-row { display: grid; grid-template-columns: 62px 1fr 96px; align-items: center; gap: 10px; }
+.bar-row .coin {
+  font-size: 12px; font-weight: 600; font-family: var(--mono);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.bar-track { position: relative; height: 17px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+/* 2px surface gap between the two fills, per the mark spec. */
+.bar-track .fill { position: absolute; top: 0; bottom: 0; }
+.bar-track .fill.l { background: var(--long); border-radius: 3px 0 0 3px; }
+.bar-track .fill.s { background: var(--short); border-radius: 0 3px 3px 0; }
+.bar-track .axis-mid { position: absolute; top: -2px; bottom: -2px; width: 1px; background: var(--axis); }
+.bar-row .net { font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; color: var(--text-2); }
+
+/* -------------------------------- table ----------------------------------- */
+
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--surface-2); color: var(--muted);
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
+  text-align: right; padding: 9px 11px; white-space: nowrap; border-bottom: 1px solid var(--border);
+}
+thead th:first-child, thead th.l { text-align: left; }
+thead th.sortable { cursor: pointer; user-select: none; }
+thead th.sortable:hover { color: var(--text); }
+thead th .arr { opacity: 0.45; font-size: 9px; }
+
+tbody td { padding: 9px 11px; text-align: right; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tbody td:first-child, tbody td.l { text-align: left; }
+tr.trader { cursor: pointer; }
+tr.trader:hover > td { background: var(--surface-2); }
+tr.trader[aria-expanded="true"] > td { background: var(--surface-2); }
+tr.trader:focus-visible { outline: 2px solid var(--long); outline-offset: -2px; }
+
+.rank { color: var(--muted); font-variant-numeric: tabular-nums; width: 34px; }
+.who { display: flex; align-items: center; gap: 8px; }
+.addr { font-family: var(--mono); font-size: 12px; }
+.name { font-size: 12px; color: var(--text); max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.vbadge {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-2);
+  border: 1px solid var(--border); border-radius: 999px; padding: 2px 7px; white-space: nowrap;
+}
+.caret { display: inline-block; width: 11px; color: var(--muted); transition: transform 0.12s; }
+tr.trader[aria-expanded="true"] .caret { transform: rotate(90deg); }
+
+.pos { color: var(--good); }
+.neg { color: var(--bad); }
+.flat { color: var(--text-2); }
+
+.side { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; }
+.side.LONG  { color: var(--long);  background: color-mix(in srgb, var(--long) 16%, transparent); }
+.side.SHORT { color: var(--short); background: color-mix(in srgb, var(--short) 16%, transparent); }
+
+/* nested positions */
+tr.detail > td { padding: 0; background: var(--surface-2); border-bottom: 1px solid var(--grid); }
+/* The nested 12-column table must not dictate the outer table's width, or
+   expanding a row pushes the trader columns off a narrow screen. Bounding the
+   wrapper to the viewport keeps the detail independently scrollable. */
+.detail-inner { padding: 11px 13px 15px; overflow-x: auto; max-width: calc(100vw - 2 * var(--gutter)); }
+.detail-inner table { font-size: 12px; }
+.detail-inner thead th { position: static; background: transparent; border-bottom: 1px solid var(--border); padding: 6px 9px; }
+.detail-inner tbody td { padding: 7px 9px; border-bottom: 1px solid var(--grid); }
+.detail-inner tbody tr:last-child td { border-bottom: none; }
+.masked { color: var(--muted); font-style: italic; font-size: 11px; }
+
+.venue-note {
+  font-size: 11px; color: var(--muted); background: var(--surface-3);
+  border-left: 2px solid var(--warn); padding: 7px 10px; border-radius: 4px; margin-bottom: 10px;
+}
+
+.empty { padding: 34px 16px; text-align: center; color: var(--muted); }
+.skeleton { height: 13px; border-radius: 4px; background: linear-gradient(90deg, var(--surface-2), var(--surface-3), var(--surface-2)); background-size: 200% 100%; animation: sh 1.3s infinite; }
+@keyframes sh { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* -------------------------------- footer ---------------------------------- */
+
+footer { margin-top: 26px; border-top: 1px solid var(--border); padding-top: 16px; color: var(--muted); font-size: 12px; }
+footer h3 { font-size: 12px; color: var(--text-2); margin: 0 0 7px; text-transform: uppercase; letter-spacing: 0.05em; }
+footer ul { margin: 0 0 14px; padding-left: 17px; }
+footer li { margin-bottom: 3px; }
+footer a { color: var(--text-2); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); gap: 20px; }
+
+/* ------------------------------ responsive -------------------------------- */
+
+/* Wide screens need no horizontal scroll, so the wrapper stops being a scroll
+   container and the header can stick to the viewport, under the site header. */
+@media (min-width: 1140px) {
+  .table-scroll { overflow-x: visible; }
+  #tradersTable > thead th { top: 57px; }
+}
+
+@media (max-width: 760px) {
+  .tile .v { font-size: 19px; }
+  .hide-sm { display: none; }
+  .bar-row { grid-template-columns: 52px 1fr 74px; }
+  .brand .sub { display: none; }
+}
+
+/* On a phone the address column alone can eat the full width, leaving the
+   numbers off-screen. Drop to the four that matter and tighten the cells. */
+@media (max-width: 560px) {
+  .hide-xs { display: none; }
+  thead th, tbody td { padding: 8px 5px; font-size: 12px; }
+  /* Nowrap headers ("OPEN NOTIONAL") alone were 131px wide; let them wrap. */
+  thead th { white-space: normal; font-size: 10px; letter-spacing: 0.03em; }
+  .rank { width: 18px; }
+  /* Stacking address over badge makes the cell as wide as the wider of the
+     two rather than their sum, which is what blew out the table. */
+  .who { flex-direction: column; align-items: flex-start; gap: 3px; }
+  .addr, .name { font-size: 11px; max-width: 84px; }
+  .vbadge { font-size: 9px; padding: 1px 5px; }
+  .detail-inner { padding: 9px 4px 12px; }
+}

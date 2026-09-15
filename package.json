@@ -1,0 +1,13 @@
+{
+  "name": "toptraders",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Live dashboard tracking top traders' open positions, PnL, entry price, value and margin across major perp exchanges.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "refresh": "node scripts/refresh.mjs",
+    "serve": "node scripts/serve.mjs"
+  },
+  "license": "MIT"
+}

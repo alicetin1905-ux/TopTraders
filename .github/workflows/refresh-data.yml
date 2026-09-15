@@ -1,0 +1,69 @@
+name: Refresh trader snapshots
+
+on:
+  schedule:
+    # Every 15 minutes. Leaderboards move slower than this; the browser keeps
+    # prices current between runs, so this only needs to catch new traders and
+    # newly opened or closed positions.
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [claude/top-traders-dashboard-bmzuko]
+    paths:
+      - 'scripts/**'
+      - 'docs/js/venues/**'
+      - '.github/workflows/refresh-data.yml'
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build snapshots
+        run: node scripts/refresh.mjs
+
+      - name: Report source health
+        run: |
+          echo "### Snapshot refresh" >> "$GITHUB_STEP_SUMMARY"
+          node -e '
+            const m = require("./docs/data/meta.json");
+            console.log("traders:", m.totals.traders, "positions:", m.totals.positions);
+            const rows = Object.entries(m.sources)
+              .map(([k, v]) => `| ${k} | ${v.ok ? "ok" : "FAILED"} | ${v.traders ?? 0} | ${v.error ?? ""} |`)
+              .join("\n");
+            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+              `\n| source | status | traders | error |\n|---|---|---|---|\n${rows}\n\n` +
+              `Totals: ${m.totals.traders} traders, ${m.totals.positions} positions, ` +
+              `$${(m.totals.notional / 1e9).toFixed(2)}B notional.\n`);
+          '
+
+      - name: Commit snapshot if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- docs/data; then
+            echo "No snapshot changes."
+            exit 0
+          fi
+          git add docs/data
+          git commit -m "chore(data): refresh trader snapshots [skip ci]"
+          # The scheduled job races with other pushes; rebase and retry rather
+          # than failing the run outright.
+          for i in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1
