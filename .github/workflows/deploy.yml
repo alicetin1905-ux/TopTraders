@@ -1,0 +1,67 @@
+name: Refresh and deploy dashboard
+
+on:
+  schedule:
+    # Best-effort: GitHub throttles high-frequency schedules on public repos, so
+    # this lands closer to hourly in practice. Prices stay live regardless,
+    # because the page re-prices client-side.
+    - cron: '*/15 * * * *'
+  push:
+    branches: [claude/top-traders-dashboard-bmzuko]
+  workflow_dispatch:
+
+# Read-only on contents: snapshots are no longer committed. They are built here
+# and handed straight to Pages, so the repository does not grow with the data.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  refresh-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build snapshots and change feed
+        env:
+          # The previous tick and the rolling feed are carried by the live site,
+          # which is the last successful deploy of this same job.
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+        run: node scripts/refresh.mjs
+
+      - name: Report source health
+        run: |
+          node -e '
+            const m = require("./docs/data/meta.json");
+            const rows = Object.entries(m.sources)
+              .map(([k, v]) => `| ${k} | ${v.ok ? "ok" : "FAILED"} | ${v.traders ?? 0} | ${v.error ?? ""} |`)
+              .join("\n");
+            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+              `### Snapshot refresh\n\n| source | status | traders | error |\n|---|---|---|---|\n${rows}\n\n` +
+              `Totals: ${m.totals.traders} traders, ${m.totals.positions} positions, ` +
+              `$${(m.totals.notional / 1e9).toFixed(2)}B notional, ` +
+              `${m.totals.changesThisTick ?? 0} changes this tick.\n`);
+          '
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

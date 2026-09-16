@@ -4,3 +4,8 @@ node_modules/
 .env
 .cache/
 tmp/
+
+# Built by the refresh pipeline and handed straight to Pages. Committing these
+# grew the repo ~72KB per refresh (~315MB/year at the observed cadence); the
+# published site carries the rolling state instead.
+docs/data/*.json

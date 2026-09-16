@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 /**
- * Seeds docs/data/changes.json from the snapshot history already in git.
+ * Seeds docs/data/changes.json from snapshot history committed in git.
  *
- * Without this the activity feed sits empty until enough refreshes have run to
- * produce a second data point. Every snapshot the refresh job has committed is
- * a real observation, so walking that history back-fills a genuine feed.
+ * Note: snapshots are no longer committed -- the refresh job carries rolling
+ * state through the deployed site instead, so the repository stops growing.
+ * That means this walks a FROZEN history (the snapshots committed before that
+ * change) and is now a recovery tool rather than part of the normal flow: use
+ * it to rebuild a feed from scratch if the live one is ever lost.
  *
  * Usage: node scripts/backfill-changes.mjs [maxCommits]
  */

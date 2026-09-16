@@ -33,6 +33,9 @@ const HTX_CANDIDATES = Number(process.env.HTX_CANDIDATES || 80);
 const BG_KEEP = Number(process.env.BG_KEEP || 25);
 const BG_CANDIDATES = Number(process.env.BG_CANDIDATES || 60);
 const CONCURRENCY = Number(process.env.CONCURRENCY || 8);
+// Where the last deploy lives. It is the carrier for rolling state now that
+// nothing is committed; set to '' to disable and always start fresh.
+const SITE_URL = (process.env.SITE_URL ?? 'https://alicetin1905-ux.github.io/TopTraders').replace(/\/$/, '');
 
 const log = (...a) => console.log('[refresh]', ...a);
 
@@ -324,10 +327,27 @@ async function main() {
   const positions = traders.reduce((a, t) => a + t.positions.length, 0);
   const snapshot = { generatedAt: Date.now(), sources, traders };
 
-  // The committed snapshot is the previous tick; diff against it before it is
-  // overwritten, so the change feed costs no extra API calls.
+  // The previous tick used to come from a committed file, which grew the repo by
+  // ~72KB per refresh forever. The published site is the same data and costs
+  // nothing to keep, so read state from there and commit nothing.
   const readJson = async (f, fallback) => {
-    try { return JSON.parse(await readFile(`${OUT}/${f}`, 'utf8')); } catch { return fallback; }
+    try {
+      return JSON.parse(await readFile(`${OUT}/${f}`, 'utf8'));
+    } catch { /* not on disk (CI checkout, or first local run) -- try the site */ }
+    if (!SITE_URL) return fallback;
+    try {
+      const res = await fetch(`${SITE_URL}/data/${f}?t=${Date.now()}`, {
+        headers: { 'Cache-Control': 'no-cache' },
+        signal: AbortSignal.timeout(30000),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const body = await res.json();
+      log(`previous ${f}: loaded from ${SITE_URL}`);
+      return body;
+    } catch (err) {
+      log(`previous ${f}: unavailable (${err.message}) -- starting fresh`);
+      return fallback;
+    }
   };
   const prev = await readJson('snapshot.json', null);
   let events = [];

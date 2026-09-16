@@ -79,15 +79,32 @@ in git, so it is populated on first deploy instead of empty for hours.
 ## How it works
 
 ```
-GitHub Actions (every 15 min)          Browser (every 15 s)
-┌────────────────────────────┐         ┌──────────────────────────────┐
-│ scripts/refresh.mjs        │         │ docs/js/app.js               │
-│  • HL leaderboard (~37 MB) │ ──────▶ │  • loads snapshot.json       │
-│  • GMX position sweep      │ commits │  • polls allMids + tickers   │
-│  • CEX lead traders        │  JSON   │  • re-prices every position  │
-│  • diffs vs. previous tick │         │  • renders the activity feed │
-└────────────────────────────┘         └──────────────────────────────┘
+GitHub Actions (scheduled)                      Browser (every 15 s)
+┌──────────────────────────────────┐            ┌──────────────────────────────┐
+│ scripts/refresh.mjs              │            │ docs/js/app.js               │
+│  • HL leaderboard (~37 MB)       │            │  • loads snapshot.json       │
+│  • GMX position sweep            │  deploys   │  • polls allMids + tickers   │
+│  • CEX lead traders              │ ─────────▶ │  • re-prices every position  │
+│  • diffs vs. previous tick       │  to Pages  │  • renders the activity feed │
+└──────────────────────────────────┘            └──────────────────────────────┘
+          ▲                                                   │
+          └───── reads last snapshot + feed from the site ◀────┘
 ```
+
+**Nothing is committed.** The snapshots are built in CI and handed straight to
+Pages. Committing them cost roughly 72 KB of packed history per refresh — about
+315 MB a year at the observed cadence, and ~2.5 GB if the 15-minute schedule
+were ever honoured — for data that is worthless the moment it is superseded.
+
+The rolling state that *does* need to survive between runs (the previous tick,
+for diffing, and the activity feed) is read back from the deployed site, which
+is simply the last successful run of this same job. If the site is unreachable
+or this is a first deploy, the run still succeeds and simply starts the feed
+fresh.
+
+A single workflow refreshes and deploys, which also sidesteps a trap: a push
+made with the default `GITHUB_TOKEN` does not trigger other workflows, so a
+commit-then-deploy split silently never redeploys.
 
 Two things can't be done from the browser, which is why there's a pipeline at
 all: Hyperliquid's leaderboard is a ~37 MB payload, and the CEXes (OKX, HTX,
@@ -107,9 +124,14 @@ book, so newly opened and closed positions show up — not just new prices.
 ## Running locally
 
 ```bash
-npm run refresh   # build docs/data/*.json (~7s, no API keys needed)
+npm run refresh   # build docs/data/*.json (~55s, no API keys needed)
 npm run serve     # http://localhost:8080
 ```
+
+`npm run refresh` is required before the first `npm run serve`: the data files
+are git-ignored, so a fresh clone has none. By default the refresh pulls the
+previous tick from the live site to diff against; set `SITE_URL=''` to skip
+that and start the activity feed empty.
 
 No dependencies, no build step, no API keys. Node 20+.
 
@@ -126,10 +148,11 @@ docs/                 the published site (GitHub Pages root)
   js/app.js           dashboard logic: filter, sort, reprice, render
   js/format.js        number/price/address formatting
   js/venues/          one adapter per exchange, shared by browser and pipeline
-  data/               snapshot.json, changes.json, meta.json — written by CI
+  data/               snapshot.json, changes.json, meta.json — built by CI,
+                      git-ignored (see "Nothing is committed" above)
 scripts/refresh.mjs   the snapshot pipeline
 scripts/lib/diff.mjs  snapshot-to-snapshot change detection
-scripts/backfill-changes.mjs  seeds the feed from git history
+scripts/backfill-changes.mjs  recovery: rebuild a feed from frozen git history
 scripts/serve.mjs     local static server
 ```
 
