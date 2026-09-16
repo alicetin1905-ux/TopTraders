@@ -284,6 +284,8 @@ async function buildBitget() {
       pnlMonth: 0,
       roiMonth: 0,
       volumeMonth: 0,
+      // aum was only feeding accountValue; surface it as a stat too.
+      aum: l.aum,
       copyTraders: l.followCount,
       positions: st.positions,
     });

@@ -52,11 +52,17 @@
 
   <section class="panel" id="activityPanel">
     <h2>Recent activity
-      <span class="hint desc">— positions opened, closed, added to or cut since the last snapshots</span>
-      <span class="hint h2-right" id="activityCount"></span>
+      <span class="hint desc" id="activityDesc">— positions opened, closed, added to or cut since the last snapshots</span>
+      <span class="seg h2-right" role="group" aria-label="Activity source">
+        <button type="button" class="segbtn" id="modeSnapshot" aria-pressed="true">Snapshot changes</button>
+        <button type="button" class="segbtn" id="modeLive" aria-pressed="false">Live fills</button>
+      </span>
+      <span class="hint" id="activityCount"></span>
     </h2>
     <div class="panel-body">
       <div class="feed" id="feed"></div>
+      <div class="feed" id="tape" hidden></div>
+      <p class="liq-note" id="tapeNote" hidden></p>
     </div>
   </section>
 

@@ -77,6 +77,28 @@ rounding nudge sizes constantly.
 `scripts/backfill-changes.mjs` seeds the feed from the snapshot history already
 in git, so it is populated on first deploy instead of empty for hours.
 
+## The live trade tape
+
+The snapshot pipeline can only see *net change between ticks*, and GitHub
+throttles the schedule to roughly hourly — so a trader who opens and closes
+inside one interval is invisible to it. The activity panel therefore has two
+modes:
+
+- **Snapshot changes** — all five venues, derived by diffing consecutive
+  snapshots.
+- **Live fills** — Hyperliquid only, streamed over its websocket. These are
+  *actual executions*: price, size and realized PnL per fill, as they happen.
+
+Hyperliquid caps a socket at 15 tracked users (`Cannot track more than 15 total
+users`), so the tape spreads the largest books over a small pool of sockets —
+30 traders, about 85% of Hyperliquid's notional and ~60% of everything tracked.
+Fills are de-duplicated by the exchange's own trade id, because the snapshot
+batch repeats after every reconnect. Spot indices (`@151`) are filtered out;
+builder-deployed perps (`xyz:INTC`) are kept.
+
+The tape only runs while the page is open — it is a live socket, not stored
+state.
+
 ## The liquidation map
 
 For a chosen coin, this answers "how much of the tracked book gets force-closed

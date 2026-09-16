@@ -13,11 +13,16 @@ import * as gmx from './venues/gmx.js';
 import { VENUES, VENUE_BY_ID, UNSUPPORTED } from './venues/index.js';
 import { usd, price, qty, pct, shortAddr, ago, cls } from './format.js';
 import { liquidationLadder, coinsWithLiquidations } from './liquidation.js';
+import { createFillStream } from './venues/hyperliquid-ws.js';
 
 const PRICE_POLL_MS = 15_000;
 const SNAPSHOT_POLL_MS = 10 * 60_000;
 // GitHub's scheduler is best-effort, so a snapshot can age well past its cron.
 const SNAPSHOT_STALE_MS = 45 * 60_000;
+// Hyperliquid caps a socket at 15 tracked users; two sockets reach ~85% of its
+// notional, which is the bulk of everything tracked.
+const TAPE_TRADERS = 30;
+const TAPE_CAP = 300;
 
 const state = {
   traders: [],
@@ -33,6 +38,10 @@ const state = {
   expanded: new Set(),
   events: [],
   liqCoin: null,
+  feedMode: 'snapshot',
+  tape: [],
+  stream: null,
+  streamStatus: null,
   lastPrice: 0,
   priceError: null,
   error: null,
@@ -388,6 +397,125 @@ function renderLiquidation(rows) {
     + 'so this is a floor on real exposure, not the whole market.';
 }
 
+/* ------------------------------- trade tape ------------------------------- */
+
+/** Open the live fill stream over the largest Hyperliquid books. */
+function startTape() {
+  if (state.stream) return;
+  const addresses = state.traders
+    .filter((t) => t.venue === 'hyperliquid')
+    .sort((a, b) => b.totalNotional - a.totalNotional)
+    .slice(0, TAPE_TRADERS)
+    .map((t) => t.address);
+  if (!addresses.length) return;
+
+  // Address -> display name, so the tape can show what the table shows.
+  const label = new Map(state.traders.map((t) => [t.address, t.label || t.address]));
+
+  state.stream = createFillStream({
+    addresses,
+    onFills: (fills) => {
+      for (const f of fills) f.trader = label.get(f.address) || f.address;
+      state.tape = [...fills, ...state.tape]
+        .sort((a, b) => b.ts - a.ts)
+        .slice(0, TAPE_CAP);
+      if (state.feedMode === 'live') renderTape();
+    },
+    onStatus: (st) => { state.streamStatus = st; if (state.feedMode === 'live') renderTape(); },
+  });
+}
+
+/** "Open Long" -> a glyph, a word and the side the fill is on. */
+function describeFill(dir) {
+  const d = dir || '';
+  const side = /long/i.test(d) ? 'LONG' : /short/i.test(d) ? 'SHORT' : null;
+  const closing = /close|liquidat/i.test(d);
+  return {
+    side,
+    glyph: closing ? '\u2212' : '+',
+    label: d.replace(/^(Open|Close)\s+/i, (m) => m.trim().toUpperCase() + ' '),
+    liquidated: /liquidat/i.test(d),
+  };
+}
+
+function renderTape() {
+  const box = $('#tape');
+  box.textContent = '';
+
+  const q = state.search.trim().toLowerCase();
+  const rows = state.tape.filter((f) => !q
+    || (f.trader || '').toLowerCase().includes(q)
+    || (f.coin || '').toLowerCase().includes(q)).slice(0, 80);
+
+  const st = state.streamStatus;
+  $('#activityCount').textContent = st
+    ? `${rows.length} of ${state.tape.length} fills · ${st.connected}/${st.sockets} sockets`
+    : 'connecting\u2026';
+
+  if (!rows.length) {
+    box.append(el('div', 'empty', st && st.connected
+      ? 'Connected \u2014 waiting for the next fill.'
+      : 'Connecting to Hyperliquid\u2026'));
+    return;
+  }
+
+  const now = Date.now();
+  for (const f of rows) {
+    const d = describeFill(f.dir);
+    const row = el('div', 'tapeevt');
+    // Only pulse genuinely new fills, not the backfill batch on connect.
+    if (!f.isSnapshot && now - f.ts < 30_000) row.classList.add('fresh');
+
+    row.append(el('div', 'when', ago(f.ts)));
+    row.append(el('div', 'act', `${d.glyph} ${d.label}`));
+
+    const who = el('div', 'who2');
+    const name = el('span', 'nolink', shortAddr(f.trader));
+    name.title = f.address;
+    who.append(name);
+    const b = el('span', 'vbadge', 'HL');
+    b.title = 'Hyperliquid — live fill';
+    who.append(b);
+    row.append(who);
+
+    row.append(el('div', 'coin2', f.coin));
+
+    const sideCell = el('div');
+    if (d.side) sideCell.append(el('span', `side ${d.side}`, d.side));
+    else sideCell.append(el('span', 'masked', f.dir || '—'));
+    row.append(sideCell);
+
+    const szpx = el('div', 'szpx', `${qty(f.size)} @ ${price(f.price)}`);
+    szpx.title = `notional ${usd(f.value)}`;
+    row.append(szpx);
+
+    // Realized PnL is only meaningful on a close.
+    row.append(el('div', `rpnl ${f.closedPnl ? cls(f.closedPnl) : 'flat'}`,
+      f.closedPnl ? usd(f.closedPnl, { compact: true, sign: true }) : ''));
+
+    box.append(row);
+  }
+}
+
+function setFeedMode(mode) {
+  state.feedMode = mode;
+  const live = mode === 'live';
+  $('#modeLive').setAttribute('aria-pressed', live ? 'true' : 'false');
+  $('#modeSnapshot').setAttribute('aria-pressed', live ? 'false' : 'true');
+  $('#feed').hidden = live;
+  $('#tape').hidden = !live;
+  $('#tapeNote').hidden = !live;
+  $('#activityDesc').textContent = live
+    ? '\u2014 actual executions from Hyperliquid, streamed as they happen'
+    : '\u2014 positions opened, closed, added to or cut since the last snapshots';
+  $('#tapeNote').textContent =
+    `Live executions for the ${TAPE_TRADERS} largest Hyperliquid books (~85% of its notional). `
+    + 'Hyperliquid caps a socket at 15 tracked users, and only it streams fills publicly, '
+    + 'so the other venues appear under snapshot changes. The tape runs only while this page is open.';
+  try { localStorage.setItem('tt-feed-mode', mode); } catch { /* private mode */ }
+  if (live) { startTape(); renderTape(); } else { render(); }
+}
+
 function renderCrowd(rows) {
   const data = crowdExposure(rows);
   const box = $('#bars');
@@ -426,9 +554,42 @@ function renderCrowd(rows) {
   }
 }
 
+/** Stats the venues report about the trader themselves, where available. */
+function traderStats(t) {
+  const out = [];
+  const add = (k, v, c) => out.push({ k, v, c });
+  if (t.pnlDay) add('24h PnL', usd(t.pnlDay, { compact: true, sign: true }), cls(t.pnlDay));
+  if (t.pnlWeek) add('7d PnL', usd(t.pnlWeek, { compact: true, sign: true }), cls(t.pnlWeek));
+  if (t.pnlMonth) add('30d PnL', usd(t.pnlMonth, { compact: true, sign: true }), cls(t.pnlMonth));
+  if (t.roiMonth) add('30d ROI', pct(t.roiMonth, { sign: true }), cls(t.roiMonth));
+  if (t.winRate !== undefined && t.winRate !== null) add('Win rate', pct(t.winRate));
+  if (t.trades) add('Trades', String(t.trades));
+  if (t.volumeMonth) add('30d volume', usd(t.volumeMonth, { compact: true }));
+  if (t.aum) add('AUM', usd(t.aum, { compact: true }));
+  if (t.copyTraders) add('Copiers', String(t.copyTraders));
+  return out;
+}
+
 function positionsTable(trader) {
   const venue = VENUE_BY_ID[trader.venue];
   const wrap = el('div', 'detail-inner');
+
+  const stats = traderStats(trader);
+  if (stats.length) {
+    const strip = el('div', 'tstats');
+    for (const st of stats) {
+      const d = el('div');
+      d.append(el('div', 'k2', st.k));
+      d.append(el('div', `v3 ${st.c || ''}`, st.v));
+      strip.append(d);
+    }
+    if (trader.link) {
+      const a = el('a', 'tlink', 'Open on venue \u2197');
+      a.href = trader.link; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      strip.append(a);
+    }
+    wrap.append(strip);
+  }
 
   if (venue?.note) wrap.append(el('div', 'venue-note', venue.note));
 
@@ -437,7 +598,8 @@ function positionsTable(trader) {
   const hr = el('tr');
   for (const [label, cls] of [
     ['Coin', 'l'], ['Side', 'l'], ['Size', ''], ['Entry', ''], ['Mark', ''],
-    ['Value', ''], ['Unreal. PnL', ''], ['ROE', ''], ['Margin', ''], ['Lev.', ''], ['Liq.', ''], ['Funding', ''],
+    ['Value', ''], ['Unreal. PnL', ''], ['ROE', ''], ['Margin', ''], ['Lev.', ''], ['Liq.', ''],
+    ['Funding', ''], ['Age', ''],
   ]) {
     const th = el('th', cls, label);
     hr.append(th);
@@ -465,10 +627,15 @@ function positionsTable(trader) {
     cell(usd(p.unrealizedPnl, { compact: true, sign: true }), cls(p.unrealizedPnl));
     cell(pct(p.roe, { sign: true }), cls(p.roe));
     cell(usd(p.marginUsed, { compact: true }));
-    cell(p.leverage ? `${p.leverage.toFixed(1)}×` : '—');
+    const levCell = cell(p.leverage ? `${p.leverage.toFixed(1)}×` : '—');
+    // Cross vs isolated changes what a loss can actually reach.
+    if (p.leverageType) levCell.title = `${p.leverageType} margin`;
+    if (p.leverageType === 'isolated') levCell.textContent += ' iso';
     cell(p.liquidationPx ? price(p.liquidationPx) : '—');
     cell(p.fundingSinceOpen === undefined ? '—' : usd(p.fundingSinceOpen, { compact: true, sign: true }),
       p.fundingSinceOpen === undefined ? '' : cls(p.fundingSinceOpen));
+    const ageCell = cell(p.openedAt ? ago(p.openedAt).replace(' ago', '') : '—');
+    if (p.openedAt) ageCell.title = `opened ${new Date(p.openedAt).toUTCString()}`;
 
     tb.append(tr);
   }
@@ -603,7 +770,7 @@ function renderFooter() {
 function render() {
   const rows = visibleTraders();
   renderTiles(rows);
-  renderFeed();
+  if (state.feedMode === 'live') renderTape(); else renderFeed();
   renderCrowd(rows);
   renderLiquidation(rows);
   renderTable(rows);
@@ -637,6 +804,8 @@ function wire() {
   $('#sort').addEventListener('change', (e) => { state.sort = e.target.value; render(); });
   $('#minSize').addEventListener('change', (e) => { state.minSize = Number(e.target.value); render(); });
   $('#liqCoin').addEventListener('change', (e) => { state.liqCoin = e.target.value; render(); });
+  $('#modeSnapshot').addEventListener('click', () => setFeedMode('snapshot'));
+  $('#modeLive').addEventListener('click', () => setFeedMode('live'));
   $('#refreshBtn').addEventListener('click', async () => {
     $('#refreshBtn').disabled = true;
     try { await loadSnapshot(); await loadChanges(); await pollPrices(); } catch (e) { state.error = e.message; }
@@ -680,6 +849,9 @@ async function boot() {
   }
   renderFooter();
   render();
+  let savedMode = null;
+  try { savedMode = localStorage.getItem('tt-feed-mode'); } catch { /* private mode */ }
+  setFeedMode(savedMode === 'live' ? 'live' : 'snapshot');
   await loadGmxContext();
   await pollPrices();
   setInterval(pollPrices, PRICE_POLL_MS);
