@@ -25,8 +25,10 @@ price.
 | Liq. | Liquidation price, where the venue publishes one |
 | Funding | Funding paid or received since the position opened |
 
-Plus a **crowd positioning** view aggregating long vs. short notional per coin
-across every tracked trader, and filters by exchange, size, coin and address.
+Plus a **recent activity feed** showing which traders opened, closed, added to
+or cut a position between snapshots, a **crowd positioning** view aggregating
+long vs. short notional per coin, and filters by exchange, size, coin and
+address.
 
 ## Exchange coverage
 
@@ -38,6 +40,7 @@ What is covered, and what each venue gives up:
 | **Hyperliquid** | Public PnL leaderboard | Full | On-chain perp DEX — every account's book is public. Refreshes live in the browser. |
 | **GMX v2** (Arbitrum + Avalanche) | Public squid indexer | Full | On-chain. Entry price, size, collateral and PnL all public. Refreshes live in the browser. |
 | **HTX** (formerly Huobi) | Public copy-trading leaderboard (~367 lead traders) | Full | Publishes lead traders' complete books — instrument, entry, mark, size, leverage, margin, liquidation price and funding. Sends no CORS headers, so values come from the snapshot. Sizes are quoted in contracts and converted via the public contract-size table. |
+| **Bitget** | Public copy-trading leaderboard | Derived | Returns symbol, entry, leverage, margin and side only. Size, notional and PnL are **derived** (`notional = margin × leverage`, `size = notional ÷ entry`, marked against the public ticker feed). Publishes no liquidation price or funding, and sends no CORS headers. |
 | **OKX** | Public copy-trading leaderboard | Partial | OKX returns side, leverage, margin, uPnL and PnL ratio, but **masks instrument, entry price and size** for non-copiers. Also sends no CORS headers, so these values come from the snapshot. |
 
 Evaluated and **not** included, with the reason:
@@ -52,6 +55,27 @@ There is no way to show a Coinbase or Binance trader's live position without
 that venue publishing it; the dashboard states this in the footer rather than
 quietly showing fewer exchanges than promised.
 
+## The activity feed
+
+Every refresh diffs the new snapshot against the one already committed, which
+costs no extra API calls — the previous tick is simply the file on disk. That
+produces `OPENED` / `CLOSED` / `INCREASED` / `REDUCED` / `FLIPPED` events with
+the trader, coin, side, notional and size delta.
+
+Two details keep the feed honest rather than noisy:
+
+- A position is keyed by **trader + coin**, not trader + coin + side, so a
+  reversal reads as one `FLIPPED` event instead of a `CLOSED` plus an `OPENED`.
+- Only venues that answered successfully this tick are compared. Without that,
+  a source having a bad minute would read as every one of its traders closing
+  every position at once.
+
+Size changes below 5% and positions under $1,000 are ignored, since funding and
+rounding nudge sizes constantly.
+
+`scripts/backfill-changes.mjs` seeds the feed from the snapshot history already
+in git, so it is populated on first deploy instead of empty for hours.
+
 ## How it works
 
 ```
@@ -60,13 +84,14 @@ GitHub Actions (every 15 min)          Browser (every 15 s)
 │ scripts/refresh.mjs        │         │ docs/js/app.js               │
 │  • HL leaderboard (~37 MB) │ ──────▶ │  • loads snapshot.json       │
 │  • GMX position sweep      │ commits │  • polls allMids + tickers   │
-│  • OKX + HTX lead traders  │  JSON   │  • re-prices every position  │
+│  • CEX lead traders        │  JSON   │  • re-prices every position  │
+│  • diffs vs. previous tick │         │  • renders the activity feed │
 └────────────────────────────┘         └──────────────────────────────┘
 ```
 
 Two things can't be done from the browser, which is why there's a pipeline at
-all: Hyperliquid's leaderboard is a ~37 MB payload, and the two CEXes (OKX and
-HTX) send no CORS headers. Everything else is fetched client-side.
+all: Hyperliquid's leaderboard is a ~37 MB payload, and the CEXes (OKX, HTX,
+Bitget) send no CORS headers. Everything else is fetched client-side.
 
 The clever part is the repricing. PnL on a perp is linear in the mark price:
 
@@ -89,7 +114,8 @@ npm run serve     # http://localhost:8080
 No dependencies, no build step, no API keys. Node 20+.
 
 Snapshot size is tunable via env vars: `HL_KEEP`, `GMX_KEEP`, `OKX_KEEP`,
-`HTX_KEEP`, `HL_CANDIDATES`, `HTX_CANDIDATES`, `CONCURRENCY`.
+`HTX_KEEP`, `BG_KEEP`, `HL_CANDIDATES`, `HTX_CANDIDATES`, `BG_CANDIDATES`,
+`CONCURRENCY`.
 
 ## Layout
 
@@ -100,8 +126,10 @@ docs/                 the published site (GitHub Pages root)
   js/app.js           dashboard logic: filter, sort, reprice, render
   js/format.js        number/price/address formatting
   js/venues/          one adapter per exchange, shared by browser and pipeline
-  data/               snapshot.json + meta.json, written by CI
+  data/               snapshot.json, changes.json, meta.json — written by CI
 scripts/refresh.mjs   the snapshot pipeline
+scripts/lib/diff.mjs  snapshot-to-snapshot change detection
+scripts/backfill-changes.mjs  seeds the feed from git history
 scripts/serve.mjs     local static server
 ```
 
@@ -118,10 +146,10 @@ red-green colourblind traders cannot tell a long from a short. The blue/red pair
 measures ΔE 25.7. PnL keeps green/red but always ships an explicit `+`/`−` sign,
 so the sign carries the meaning and colour only reinforces it.
 
-Venue is deliberately **not** colour-coded. With four exchanges, no categorical
+Venue is deliberately **not** colour-coded. With five exchanges, no categorical
 palette clears the colourblind-separation floors under all-pairs comparison —
 every candidate quartet failed — so venue is shown as a short text code
-(`HL`, `GMX`, `OKX`, `HTX`) in a neutral chip. That keeps the page's colour
+(`HL`, `GMX`, `OKX`, `HTX`, `BG`) in a neutral chip. That keeps the page's colour
 budget on the two things it genuinely encodes: direction and PnL.
 
 ## Caveats

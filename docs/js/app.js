@@ -30,6 +30,7 @@ const state = {
   sortDir: -1,
   minSize: 0,
   expanded: new Set(),
+  events: [],
   lastPrice: 0,
   priceError: null,
   error: null,
@@ -107,6 +108,16 @@ async function loadSnapshot() {
   state.traders = s.traders || [];
   state.generatedAt = s.generatedAt;
   state.sources = s.sources || {};
+}
+
+/** The change feed is optional: the dashboard still works without it. */
+async function loadChanges() {
+  try {
+    const res = await fetch(`data/changes.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const c = await res.json();
+    state.events = c.events || [];
+  } catch { /* feed stays empty */ }
 }
 
 /** Re-pull one trader's live book (catches opens/closes, not just price moves). */
@@ -208,6 +219,78 @@ function renderTiles(rows) {
     d.append(el('div', `v ${t.cls || ''}`, t.v));
     d.append(el('div', 'note', t.note));
     box.append(d);
+  }
+}
+
+const ACTIONS = {
+  OPENED:    { glyph: '+', label: 'OPENED',  cls: 'up' },
+  INCREASED: { glyph: '+', label: 'ADDED',   cls: 'up' },
+  REDUCED:   { glyph: '\u2212', label: 'CUT', cls: 'down' },
+  CLOSED:    { glyph: '\u2212', label: 'CLOSED', cls: 'down' },
+  FLIPPED:   { glyph: '\u21c4', label: 'FLIPPED', cls: 'flip' },
+};
+
+function renderFeed() {
+  const box = $('#feed');
+  box.textContent = '';
+
+  const q = state.search.trim().toLowerCase();
+  const rows = state.events.filter((e) => state.venueFilter.has(e.venue) && (!q
+    || (e.trader || '').toLowerCase().includes(q)
+    || (e.coin || '').toLowerCase().includes(q))).slice(0, 60);
+
+  $('#activityCount').textContent = state.events.length
+    ? `${rows.length} shown of ${state.events.length}`
+    : '';
+
+  if (!rows.length) {
+    box.append(el('div', 'empty',
+      state.events.length
+        ? 'No activity matches these filters.'
+        : 'No activity recorded yet — the feed fills in as snapshots are compared.'));
+    return;
+  }
+
+  for (const e of rows) {
+    const a = ACTIONS[e.type] || { glyph: '\u00b7', label: e.type, cls: 'down' };
+    const row = el('div', 'fevt');
+
+    row.append(el('div', 'when', ago(e.ts)));
+    row.append(el('div', `act ${a.cls}`, `${a.glyph} ${a.label}`));
+
+    const who = el('div', 'who2');
+    const name = e.trader ? shortAddr(e.trader) : '—';
+    if (e.link) {
+      const link = el('a', null, name);
+      link.href = e.link; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      link.title = e.trader;
+      who.append(link);
+    } else {
+      const sp = el('span', 'nolink', name);
+      sp.title = e.trader || '';
+      who.append(sp);
+    }
+    const venue = VENUE_BY_ID[e.venue];
+    const b = el('span', 'vbadge', venue ? venue.code : e.venue);
+    b.title = venue ? `${venue.name} — ${venue.kind}` : e.venue;
+    who.append(b);
+    row.append(who);
+
+    row.append(el('div', 'coin2', e.coin || '—'));
+
+    const sideCell = el('div');
+    sideCell.append(el('span', `side ${e.side}`, e.side));
+    if (e.type === 'FLIPPED' && e.fromSide) sideCell.title = `was ${e.fromSide}`;
+    row.append(sideCell);
+
+    const val = el('div', 'val2', usd(e.value, { compact: true }));
+    val.title = e.entryPx ? `entry ${price(e.entryPx)}${e.leverage ? ` · ${e.leverage.toFixed(1)}×` : ''}` : '';
+    row.append(val);
+
+    row.append(el('div', 'delta',
+      e.deltaPct === undefined ? '' : `${e.deltaPct > 0 ? '+' : ''}${(e.deltaPct * 100).toFixed(0)}%`));
+
+    box.append(row);
   }
 }
 
@@ -426,6 +509,7 @@ function renderFooter() {
 function render() {
   const rows = visibleTraders();
   renderTiles(rows);
+  renderFeed();
   renderCrowd(rows);
   renderTable(rows);
   renderStatus();
@@ -459,7 +543,7 @@ function wire() {
   $('#minSize').addEventListener('change', (e) => { state.minSize = Number(e.target.value); render(); });
   $('#refreshBtn').addEventListener('click', async () => {
     $('#refreshBtn').disabled = true;
-    try { await loadSnapshot(); await pollPrices(); } catch (e) { state.error = e.message; }
+    try { await loadSnapshot(); await loadChanges(); await pollPrices(); } catch (e) { state.error = e.message; }
     $('#refreshBtn').disabled = false;
     render();
   });
@@ -492,6 +576,7 @@ async function boot() {
   wire();
   try {
     await loadSnapshot();
+    await loadChanges();
   } catch (e) {
     state.error = 'snapshot unavailable';
     render();
@@ -502,7 +587,7 @@ async function boot() {
   await loadGmxContext();
   await pollPrices();
   setInterval(pollPrices, PRICE_POLL_MS);
-  setInterval(() => loadSnapshot().then(renderFooter).catch(() => {}), SNAPSHOT_POLL_MS);
+  setInterval(() => loadSnapshot().then(loadChanges).then(() => { renderFooter(); render(); }).catch(() => {}), SNAPSHOT_POLL_MS);
   setInterval(renderStatus, 5000);
 }
 

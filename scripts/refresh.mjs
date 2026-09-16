@@ -9,7 +9,7 @@
  * Output: docs/data/snapshot.json, docs/data/meta.json
  */
 
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -17,6 +17,8 @@ import * as hl from '../docs/js/venues/hyperliquid.js';
 import * as gmx from '../docs/js/venues/gmx.js';
 import * as okx from '../docs/js/venues/okx.js';
 import * as htx from '../docs/js/venues/htx.js';
+import * as bitget from '../docs/js/venues/bitget.js';
+import { diffSnapshots, mergeFeed } from './lib/diff.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'docs/data');
@@ -28,6 +30,8 @@ const GMX_KEEP = Number(process.env.GMX_KEEP || 40);
 const OKX_KEEP = Number(process.env.OKX_KEEP || 20);
 const HTX_KEEP = Number(process.env.HTX_KEEP || 25);
 const HTX_CANDIDATES = Number(process.env.HTX_CANDIDATES || 80);
+const BG_KEEP = Number(process.env.BG_KEEP || 25);
+const BG_CANDIDATES = Number(process.env.BG_CANDIDATES || 60);
 const CONCURRENCY = Number(process.env.CONCURRENCY || 8);
 
 const log = (...a) => console.log('[refresh]', ...a);
@@ -242,6 +246,51 @@ async function buildHtx() {
   return kept;
 }
 
+/* --------------------------------- Bitget --------------------------------- */
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function buildBitget() {
+  log('bitget: marks + lead traders\u2026');
+  const [marks, leaders] = await Promise.all([
+    retry(() => bitget.fetchMarks()),
+    retry(() => bitget.fetchLeaderboard(BG_CANDIDATES)),
+  ]);
+  log(`bitget: probing ${leaders.length} lead traders (throttled)\u2026`);
+
+  // Bitget answers bursts with HTTP 429, so walk the roster serially.
+  const traders = [];
+  for (const l of leaders) {
+    await sleep(700);
+    let st;
+    try {
+      st = await retry(() => bitget.fetchTrader(l.traderUid, marks), 2, 3000);
+    } catch { continue; }
+    if (!st.positions.length) continue;
+    traders.push({
+      venue: 'bitget',
+      id: l.traderUid,
+      address: l.traderUid,
+      label: l.nickName,
+      link: `https://www.bitget.com/copy-trading/futures-trader-v1/${l.traderUid}`,
+      accountValue: l.totalEquity || l.aum || st.accountValue,
+      totalNotional: st.totalNotional,
+      totalMarginUsed: st.totalMarginUsed,
+      pnlDay: 0,
+      pnlWeek: 0,
+      pnlMonth: 0,
+      roiMonth: 0,
+      volumeMonth: 0,
+      copyTraders: l.followCount,
+      positions: st.positions,
+    });
+  }
+  traders.sort((a, b) => b.totalNotional - a.totalNotional);
+  const kept = traders.slice(0, BG_KEEP);
+  log(`bitget: kept ${kept.length} traders with open positions`);
+  return kept;
+}
+
 /* ---------------------------------- main ---------------------------------- */
 
 async function main() {
@@ -254,6 +303,7 @@ async function main() {
     ['gmx:avalanche', buildGmxChain('avalanche')],
     ['okx', buildOkx()],
     ['htx', buildHtx()],
+    ['bitget', buildBitget()],
   ];
 
   const results = await Promise.allSettled(tasks.map(([, p]) => p));
@@ -273,6 +323,30 @@ async function main() {
 
   const positions = traders.reduce((a, t) => a + t.positions.length, 0);
   const snapshot = { generatedAt: Date.now(), sources, traders };
+
+  // The committed snapshot is the previous tick; diff against it before it is
+  // overwritten, so the change feed costs no extra API calls.
+  const readJson = async (f, fallback) => {
+    try { return JSON.parse(await readFile(`${OUT}/${f}`, 'utf8')); } catch { return fallback; }
+  };
+  const prev = await readJson('snapshot.json', null);
+  let events = [];
+  try {
+    // Only diff venues that came back healthy: a source that failed this tick
+    // would otherwise read as every one of its traders closing at once.
+    const healthy = new Set(Object.entries(sources)
+      .filter(([, v]) => v.ok).map(([k]) => k.split(':')[0]));
+    const scope = (snap) => (snap
+      ? { ...snap, traders: (snap.traders || []).filter((t) => healthy.has(t.venue)) }
+      : snap);
+    events = diffSnapshots(scope(prev), scope(snapshot), snapshot.generatedAt);
+  } catch (err) {
+    console.error('[refresh] diff failed (continuing):', err.message);
+  }
+  const feed = mergeFeed((await readJson('changes.json', { events: [] })).events, events);
+  await mkdir(OUT, { recursive: true });
+  await writeFile(`${OUT}/changes.json`, JSON.stringify({ updatedAt: snapshot.generatedAt, events: feed }));
+  log(`changes: +${events.length} this tick, ${feed.length} in feed`);
   const meta = {
     generatedAt: snapshot.generatedAt,
     durationMs: Date.now() - started,
@@ -280,6 +354,7 @@ async function main() {
     totals: {
       traders: traders.length,
       positions,
+      changesThisTick: events.length,
       notional: traders.reduce((a, t) => a + (t.totalNotional || 0), 0),
     },
   };

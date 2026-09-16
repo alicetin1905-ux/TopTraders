@@ -2,11 +2,12 @@ import * as hyperliquid from './hyperliquid.js';
 import * as gmx from './gmx.js';
 import * as okx from './okx.js';
 import * as htx from './htx.js';
+import * as bitget from './bitget.js';
 
-export { hyperliquid, gmx, okx, htx };
+export { hyperliquid, gmx, okx, htx, bitget };
 
 /** Venue registry, in the order the UI shows them. */
-export const VENUES = [hyperliquid.meta, gmx.meta, okx.meta, htx.meta];
+export const VENUES = [hyperliquid.meta, gmx.meta, okx.meta, htx.meta, bitget.meta];
 
 export const VENUE_BY_ID = Object.fromEntries(VENUES.map((v) => [v.id, v]));
 
