@@ -58,8 +58,12 @@ jobs:
             echo "No snapshot changes."
             exit 0
           fi
+          # No [skip ci] here: that would suppress every workflow on this push,
+          # including the Pages deploy, leaving the published site frozen on an
+          # old snapshot. This job's own push trigger is filtered to scripts/**
+          # and docs/js/venues/**, so a data-only commit cannot re-trigger it.
           git add docs/data
-          git commit -m "chore(data): refresh trader snapshots [skip ci]"
+          git commit -m "chore(data): refresh trader snapshots"
           # The scheduled job races with other pushes; rebase and retry rather
           # than failing the run outright.
           for i in 1 2 3; do

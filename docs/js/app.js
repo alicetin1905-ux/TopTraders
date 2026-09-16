@@ -15,6 +15,8 @@ import { usd, price, qty, pct, shortAddr, ago, cls } from './format.js';
 
 const PRICE_POLL_MS = 15_000;
 const SNAPSHOT_POLL_MS = 10 * 60_000;
+// GitHub's scheduler is best-effort, so a snapshot can age well past its cron.
+const SNAPSHOT_STALE_MS = 45 * 60_000;
 
 const state = {
   traders: [],
@@ -378,11 +380,13 @@ function renderStatus() {
     return;
   }
   const stale = !state.lastPrice || Date.now() - state.lastPrice > PRICE_POLL_MS * 3;
-  dot.className = `dot${stale || state.priceError ? ' stale' : ''}`;
+  const snapStale = state.generatedAt && Date.now() - state.generatedAt > SNAPSHOT_STALE_MS;
+  dot.className = `dot${stale || snapStale || state.priceError ? ' stale' : ''}`;
   if (state.priceError && !state.lastPrice) {
     txt.textContent = state.priceError;
   } else if (state.lastPrice) {
     txt.textContent = `${stale ? 'stale' : 'live'} · prices ${ago(state.lastPrice)} · snapshot ${ago(state.generatedAt)}`
+      + (snapStale ? ' (positions may have changed)' : '')
       + (state.priceError ? ` · ${state.priceError}` : '');
   } else {
     txt.textContent = `snapshot ${ago(state.generatedAt)}`;
