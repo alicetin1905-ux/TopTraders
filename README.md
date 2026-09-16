@@ -26,9 +26,10 @@ price.
 | Funding | Funding paid or received since the position opened |
 
 Plus a **recent activity feed** showing which traders opened, closed, added to
-or cut a position between snapshots, a **crowd positioning** view aggregating
-long vs. short notional per coin, and filters by exchange, size, coin and
-address.
+or cut a position between snapshots, a **liquidation map** of how much tracked
+notional gets forced out as price moves, a **crowd positioning** view
+aggregating long vs. short notional per coin, and filters by exchange, size,
+coin and address.
 
 ## Exchange coverage
 
@@ -75,6 +76,29 @@ rounding nudge sizes constantly.
 
 `scripts/backfill-changes.mjs` seeds the feed from the snapshot history already
 in git, so it is populated on first deploy instead of empty for hours.
+
+## The liquidation map
+
+For a chosen coin, this answers "how much of the tracked book gets force-closed
+if price falls 10%?" — cumulative, so the figure at −20% includes everything
+already gone at −10%. Longs liquidate as price falls, shorts as it rises.
+
+It reports its own blind spots instead of implying completeness:
+
+- Only **Hyperliquid and HTX publish a liquidation price**. GMX, OKX and Bitget
+  do not, so their positions are counted as unmapped and shown alongside the
+  ladder. The map is a floor on real exposure, not the whole market. In
+  practice it still covers ~87% of tracked notional, because Hyperliquid
+  dominates it.
+- Positions quoted more than 100% away are treated as unmapped. Venues return
+  placeholder levels for effectively-unleveraged positions — one SOL short came
+  back 588,405,339% away — which would otherwise wreck the scale.
+- A long liquidates below mark and a short above it. A handful of positions come
+  back on the wrong side (cross-margin accounting quirks); counting one would
+  mark it liquidated at *every* band in that direction, so they are excluded.
+
+The headline number is usually the reassuring one: these are mostly low-leverage
+whales, and the nearest liquidation is typically tens of percent away.
 
 ## How it works
 
@@ -147,6 +171,7 @@ docs/                 the published site (GitHub Pages root)
   styles.css
   js/app.js           dashboard logic: filter, sort, reprice, render
   js/format.js        number/price/address formatting
+  js/liquidation.js   liquidation ladder + coverage accounting
   js/venues/          one adapter per exchange, shared by browser and pipeline
   data/               snapshot.json, changes.json, meta.json — built by CI,
                       git-ignored (see "Nothing is committed" above)

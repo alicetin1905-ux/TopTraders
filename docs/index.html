@@ -52,8 +52,8 @@
 
   <section class="panel" id="activityPanel">
     <h2>Recent activity
-      <span class="hint">— positions opened, closed, added to or cut since the last snapshots</span>
-      <span class="hint" id="activityCount" style="margin-left:auto"></span>
+      <span class="hint desc">— positions opened, closed, added to or cut since the last snapshots</span>
+      <span class="hint h2-right" id="activityCount"></span>
     </h2>
     <div class="panel-body">
       <div class="feed" id="feed"></div>
@@ -61,7 +61,7 @@
   </section>
 
   <section class="panel" id="crowdPanel">
-    <h2>Crowd positioning <span class="hint">— aggregate exposure of tracked traders, by coin</span></h2>
+    <h2>Crowd positioning <span class="hint desc">— aggregate exposure of tracked traders, by coin</span></h2>
     <div class="panel-body">
       <div class="legend">
         <span><span class="swatch" style="background:var(--long)"></span>Long</span>
@@ -69,6 +69,22 @@
         <span style="color:var(--muted)">Bar length = notional exposure · value at right = net</span>
       </div>
       <div class="bars" id="bars"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="liqPanel">
+    <h2>Liquidation map
+      <span class="hint desc">— tracked notional forced out as price moves, cumulative</span>
+      <select id="liqCoin" class="h2-right" aria-label="Coin for the liquidation map"></select>
+    </h2>
+    <div class="panel-body">
+      <div class="liq-summary" id="liqSummary"></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--short)"></span>Short liquidations (price rises)</span>
+        <span><span class="swatch" style="background:var(--long)"></span>Long liquidations (price falls)</span>
+      </div>
+      <div class="ladder" id="ladder"></div>
+      <p class="liq-note" id="liqCoverage"></p>
     </div>
   </section>
 

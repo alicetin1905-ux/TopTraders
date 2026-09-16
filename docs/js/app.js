@@ -12,6 +12,7 @@ import * as hl from './venues/hyperliquid.js';
 import * as gmx from './venues/gmx.js';
 import { VENUES, VENUE_BY_ID, UNSUPPORTED } from './venues/index.js';
 import { usd, price, qty, pct, shortAddr, ago, cls } from './format.js';
+import { liquidationLadder, coinsWithLiquidations } from './liquidation.js';
 
 const PRICE_POLL_MS = 15_000;
 const SNAPSHOT_POLL_MS = 10 * 60_000;
@@ -31,6 +32,7 @@ const state = {
   minSize: 0,
   expanded: new Set(),
   events: [],
+  liqCoin: null,
   lastPrice: 0,
   priceError: null,
   error: null,
@@ -294,6 +296,98 @@ function renderFeed() {
   }
 }
 
+function renderLiquidation(rows) {
+  const coins = coinsWithLiquidations(rows);
+  const sel = $('#liqCoin');
+  const panel = $('#liqPanel');
+
+  if (!coins.length) {
+    panel.hidden = true;
+    return;
+  }
+  panel.hidden = false;
+
+  // Keep the chosen coin if it still has data, else fall back to the largest.
+  if (!state.liqCoin || !coins.some((c) => c.coin === state.liqCoin)) {
+    state.liqCoin = coins[0].coin;
+  }
+  const wanted = coins.map((c) => c.coin).join(',');
+  if (sel.dataset.coins !== wanted) {
+    sel.dataset.coins = wanted;
+    sel.textContent = '';
+    for (const c of coins) {
+      const o = el('option', null, `${c.coin} — ${usd(c.value, { compact: true })}`);
+      o.value = c.coin;
+      sel.append(o);
+    }
+  }
+  sel.value = state.liqCoin;
+
+  const L = liquidationLadder(rows, state.liqCoin);
+  const ladder = $('#ladder');
+  ladder.textContent = '';
+  if (!L) return;
+
+  const dist = (p) => (p ? `${(((p.liqPx - L.mark) / L.mark) * 100).toFixed(1)}%` : '—');
+  const sum = $('#liqSummary');
+  sum.textContent = '';
+  for (const [k, v, c] of [
+    ['Mark price', price(L.mark), ''],
+    ['Nearest long liq.', L.nearestLong ? `${price(L.nearestLong.liqPx)} (${dist(L.nearestLong)})` : '—', 'pos-long'],
+    ['Nearest short liq.', L.nearestShort ? `${price(L.nearestShort.liqPx)} (+${dist(L.nearestShort)})` : '—', 'pos-short'],
+    ['Mapped notional', usd(L.covered.value, { compact: true }), ''],
+  ]) {
+    const d = el('div');
+    d.append(el('div', 'k2', k));
+    const val = el('div', 'v2', v);
+    if (c === 'pos-long') val.style.color = 'var(--long)';
+    if (c === 'pos-short') val.style.color = 'var(--short)';
+    d.append(val);
+    sum.append(d);
+  }
+
+  const up = L.rows.filter((r) => r.dir === 'up');
+  const down = L.rows.filter((r) => r.dir === 'down');
+
+  const addRow = (r) => {
+    const row = el('div', 'lrow');
+    row.append(el('div', 'band', `${r.pct > 0 ? '+' : ''}${r.pct}%`));
+    row.append(el('div', 'lpx', price(r.price)));
+
+    const track = el('div', 'ltrack');
+    // No bar at all when nothing liquidates: min-width would otherwise paint a
+    // sliver that reads as a small non-zero amount.
+    if (r.notional > 0 && L.max > 0) {
+      const fill = el('div', `lfill ${r.dir === 'up' ? 's' : 'l'}`);
+      fill.style.width = `${Math.max((r.notional / L.max) * 100, 1.5)}%`;
+      track.append(fill);
+    }
+    track.title = `${r.count} ${r.side.toLowerCase()} position(s) liquidated by ${price(r.price)} — ${usd(r.notional)}`;
+    row.append(track);
+
+    row.append(el('div', `lval${r.notional > 0 ? '' : ' zero'}`, usd(r.notional, { compact: true })));
+    ladder.append(row);
+  };
+
+  up.forEach(addRow);
+
+  const markRow = el('div', 'lmark');
+  markRow.append(el('div', 'band', 'now'));
+  markRow.append(el('div', 'now', price(L.mark)));
+  markRow.append(el('div', 'rule'));
+  markRow.append(el('div'));
+  ladder.append(markRow);
+
+  down.forEach(addRow);
+
+  const total = L.covered.value + L.uncovered.value;
+  $('#liqCoverage').textContent =
+    `Mapped ${L.covered.count} of ${L.covered.count + L.uncovered.count} tracked ${state.liqCoin} positions `
+    + `(${usd(L.covered.value, { compact: true })} of ${usd(total, { compact: true })}). `
+    + 'Only Hyperliquid and HTX publish a liquidation price — GMX, OKX and Bitget do not, '
+    + 'so this is a floor on real exposure, not the whole market.';
+}
+
 function renderCrowd(rows) {
   const data = crowdExposure(rows);
   const box = $('#bars');
@@ -511,6 +605,7 @@ function render() {
   renderTiles(rows);
   renderFeed();
   renderCrowd(rows);
+  renderLiquidation(rows);
   renderTable(rows);
   renderStatus();
 }
@@ -541,6 +636,7 @@ function wire() {
   $('#search').addEventListener('input', (e) => { state.search = e.target.value; render(); });
   $('#sort').addEventListener('change', (e) => { state.sort = e.target.value; render(); });
   $('#minSize').addEventListener('change', (e) => { state.minSize = Number(e.target.value); render(); });
+  $('#liqCoin').addEventListener('change', (e) => { state.liqCoin = e.target.value; render(); });
   $('#refreshBtn').addEventListener('click', async () => {
     $('#refreshBtn').disabled = true;
     try { await loadSnapshot(); await loadChanges(); await pollPrices(); } catch (e) { state.error = e.message; }

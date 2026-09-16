@@ -138,6 +138,8 @@ input[type="search"]:focus-visible, select:focus-visible { outline: 2px solid va
   display: flex; align-items: center; gap: 10px; font-weight: 600;
 }
 .panel > h2 .hint { font-weight: 400; color: var(--muted); font-size: 11px; }
+.panel > h2 { flex-wrap: wrap; }
+.h2-right { margin-left: auto; }
 .panel-body { padding: 13px 15px; }
 
 .legend { display: flex; gap: 14px; font-size: 11px; color: var(--text-2); margin-bottom: 12px; }
@@ -270,7 +272,11 @@ footer a { color: var(--text-2); }
 
 /* ------------------------------ activity feed ----------------------------- */
 
-.feed { display: grid; gap: 1px; background: var(--grid); border-radius: 6px; overflow: hidden; }
+/* Capped so the panels below it stay reachable without a long scroll. */
+.feed {
+  display: grid; gap: 1px; background: var(--grid); border-radius: 6px;
+  overflow-y: auto; max-height: 420px;
+}
 .fevt {
   display: grid;
   grid-template-columns: 58px 78px 1fr 62px 62px 92px 54px;
@@ -305,4 +311,45 @@ footer a { color: var(--text-2); }
   .fevt .who2 a, .fevt .who2 span.nolink { max-width: 74px; font-size: 11px; }
   .fevt .vbadge { font-size: 9px; padding: 1px 4px; }
   .fevt .side { font-size: 9px; padding: 1px 4px; }
+}
+
+/* ----------------------------- liquidation map ---------------------------- */
+
+.liq-summary { display: flex; gap: 22px; flex-wrap: wrap; margin-bottom: 12px; }
+.liq-summary div { font-size: 12px; }
+.liq-summary .k2 { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+.liq-summary .v2 { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.ladder { display: grid; gap: 3px; }
+.lrow { display: grid; grid-template-columns: 52px 86px 1fr 92px; gap: 10px; align-items: center; font-size: 12px; }
+.lrow .band { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+.lrow .lpx { color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; font-size: 11px; }
+.lrow .ltrack { position: relative; height: 16px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+.lrow .lfill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; min-width: 2px; }
+.lrow .lfill.s { background: var(--short); }
+.lrow .lfill.l { background: var(--long); }
+.lrow .lval { text-align: right; font-variant-numeric: tabular-nums; }
+.lrow .lval.zero { color: var(--muted); }
+
+/* The current price, where the two directions meet. */
+.lmark {
+  display: grid; grid-template-columns: 52px 86px 1fr 92px; gap: 10px; align-items: center;
+  margin: 5px 0; font-size: 11px; color: var(--text-2);
+}
+.lmark .rule { height: 1px; background: var(--axis); }
+.lmark .now { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }
+
+.liq-note { font-size: 11px; color: var(--muted); margin: 12px 0 0; }
+
+@media (max-width: 760px) {
+  .lrow, .lmark { grid-template-columns: 42px 70px 1fr 72px; gap: 7px; font-size: 11px; }
+  .liq-summary { gap: 14px; }
+}
+
+/* At phone width the descriptive subtitle squeezes into a narrow column
+   between the title and the control; drop it and let the control breathe. */
+@media (max-width: 760px) {
+  .panel > h2 .desc { display: none; }
+  .h2-right { margin-left: auto; }
+  #liqCoin { max-width: 58%; }
 }

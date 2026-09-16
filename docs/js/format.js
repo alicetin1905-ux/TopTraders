@@ -2,6 +2,8 @@
 
 export function usd(v, { compact = false, sign = false } = {}) {
   if (v === null || v === undefined || !isFinite(v)) return '—';
+  // Without this, zero picks the sub-$1 branch and prints "$0.0000".
+  if (v === 0) return '$0';
   const abs = Math.abs(v);
   const s = v < 0 ? '-' : (sign && v > 0 ? '+' : '');
   if (compact) {
