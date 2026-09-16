@@ -20,11 +20,15 @@ concurrency:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
 
@@ -51,13 +55,16 @@ jobs:
           '
 
       - name: Commit snapshot if changed
+        id: commit
         run: |
+          echo "changed=false" >> "$GITHUB_OUTPUT"
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if git diff --quiet -- docs/data; then
             echo "No snapshot changes."
             exit 0
           fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
           # No [skip ci] here: that would suppress every workflow on this push,
           # including the Pages deploy, leaving the published site frozen on an
           # old snapshot. This job's own push trigger is filtered to scripts/**
@@ -71,3 +78,30 @@ jobs:
             sleep $((i * 5))
           done
           exit 1
+
+  # A push made with the default GITHUB_TOKEN does not trigger other workflows
+  # (GitHub's anti-recursion rule), so the data commit above can never set off
+  # pages.yml on its own. Deploying from this same run is what actually gets
+  # refreshed data onto the live site.
+  deploy:
+    needs: refresh
+    if: needs.refresh.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages-deploy
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The run started before the data commit; take the branch head so the
+          # artifact includes it.
+          ref: ${{ github.ref_name }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs
+      - id: deployment
+        uses: actions/deploy-pages@v4
