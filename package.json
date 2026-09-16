@@ -7,9 +7,7 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "refresh": "node scripts/refresh.mjs",
-    "serve": "node scripts/serve.mjs",
-    "football:refresh": "node scripts/football-refresh.mjs",
-    "football:serve": "node scripts/football-serve.mjs"
+    "serve": "node scripts/serve.mjs"
   },
   "license": "MIT"
 }

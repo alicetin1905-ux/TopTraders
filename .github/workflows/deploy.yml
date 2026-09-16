@@ -45,14 +45,6 @@ jobs:
           SITE_URL: ${{ steps.pages.outputs.base_url }}
         run: node scripts/refresh.mjs
 
-      - name: Build football fixtures
-        env:
-          # Optional: set a RAPIDAPI_KEY repo secret to pull live fixtures from
-          # API-Football. Without it (or if the live fetch fails), this falls
-          # back to deterministic demo data and still succeeds.
-          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
-        run: node scripts/football-refresh.mjs
-
       - name: Report source health
         run: |
           node -e '
