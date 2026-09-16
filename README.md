@@ -7,6 +7,11 @@ price.
 
 **Live site:** https://alicetin1905-ux.github.io/TopTraders/
 
+This repo also hosts a second, independent dashboard: the
+[**Away Win + BTTS Tracker**](FOOTBALL.md) for European football
+(https://alicetin1905-ux.github.io/TopTraders/football/). Separate code, separate
+data, same repo — see [FOOTBALL.md](FOOTBALL.md).
+
 ---
 
 ## What it shows

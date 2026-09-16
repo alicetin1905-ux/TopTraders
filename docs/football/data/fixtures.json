@@ -1,0 +1,1107 @@
+{
+  "generatedAt": "2026-09-16T21:54:35.386Z",
+  "source": "mock",
+  "disclaimer": "Public/derived football statistics shown for information only — not betting advice.",
+  "fixtures": [
+    {
+      "id": "mock-34-35",
+      "date": "2026-09-21T15:00:00.000Z",
+      "league": "Serie A",
+      "leagueCountry": "Italy",
+      "home": {
+        "id": 34,
+        "name": "Napoli"
+      },
+      "away": {
+        "id": 35,
+        "name": "Roma"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 5,
+          "awaySample": 7,
+          "homeWinPct": 0.2,
+          "homeLossPct": 0.4,
+          "homeBttsPct": 0.6,
+          "awayWinPct": 0.5714285714285714,
+          "awayLossPct": 0.2857142857142857,
+          "awayBttsPct": 0.2857142857142857
+        },
+        "away": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.3333333333333333,
+          "homeLossPct": 0.5,
+          "homeBttsPct": 0.6666666666666666,
+          "awayWinPct": 0.6666666666666666,
+          "awayLossPct": 0,
+          "awayBttsPct": 0.6666666666666666
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.5333333333333333,
+        "bttsLikelihood": 0.6333333333333333,
+        "combined": 0.33777777777777773,
+        "confidence": "ok",
+        "sampleHome": 5,
+        "sampleAway": 6
+      }
+    },
+    {
+      "id": "mock-29-27",
+      "date": "2026-09-20T15:00:00.000Z",
+      "league": "Bundesliga",
+      "leagueCountry": "Germany",
+      "home": {
+        "id": 29,
+        "name": "Wolfsburg"
+      },
+      "away": {
+        "id": 27,
+        "name": "Freiburg"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 4,
+          "awaySample": 8,
+          "homeWinPct": 0.25,
+          "homeLossPct": 0.5,
+          "homeBttsPct": 0.75,
+          "awayWinPct": 0.375,
+          "awayLossPct": 0.125,
+          "awayBttsPct": 0.75
+        },
+        "away": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0.42857142857142855,
+          "homeLossPct": 0.14285714285714285,
+          "homeBttsPct": 0.5714285714285714,
+          "awayWinPct": 0.4,
+          "awayLossPct": 0.2,
+          "awayBttsPct": 0.6
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.45,
+        "bttsLikelihood": 0.675,
+        "combined": 0.30375,
+        "confidence": "low",
+        "sampleHome": 4,
+        "sampleAway": 5
+      }
+    },
+    {
+      "id": "mock-14-12",
+      "date": "2026-09-18T15:00:00.000Z",
+      "league": "La Liga",
+      "leagueCountry": "Spain",
+      "home": {
+        "id": 14,
+        "name": "Real Sociedad"
+      },
+      "away": {
+        "id": 12,
+        "name": "Barcelona"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.3333333333333333,
+          "homeLossPct": 0.5,
+          "homeBttsPct": 1,
+          "awayWinPct": 0.3333333333333333,
+          "awayLossPct": 0.3333333333333333,
+          "awayBttsPct": 0.8333333333333334
+        },
+        "away": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0.42857142857142855,
+          "homeLossPct": 0.42857142857142855,
+          "homeBttsPct": 0.2857142857142857,
+          "awayWinPct": 0.2,
+          "awayLossPct": 0.6,
+          "awayBttsPct": 0.6
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.35,
+        "bttsLikelihood": 0.8,
+        "combined": 0.27999999999999997,
+        "confidence": "ok",
+        "sampleHome": 6,
+        "sampleAway": 5
+      }
+    },
+    {
+      "id": "mock-44-47",
+      "date": "2026-09-20T15:00:00.000Z",
+      "league": "Ligue 1",
+      "leagueCountry": "France",
+      "home": {
+        "id": 44,
+        "name": "Lyon"
+      },
+      "away": {
+        "id": 47,
+        "name": "Lens"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0.42857142857142855,
+          "homeLossPct": 0.2857142857142857,
+          "homeBttsPct": 0.7142857142857143,
+          "awayWinPct": 0.4,
+          "awayLossPct": 0.4,
+          "awayBttsPct": 0.2
+        },
+        "away": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.16666666666666666,
+          "homeLossPct": 0.8333333333333334,
+          "homeBttsPct": 0.3333333333333333,
+          "awayWinPct": 0.5,
+          "awayLossPct": 0.5,
+          "awayBttsPct": 0.6666666666666666
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.39285714285714285,
+        "bttsLikelihood": 0.6904761904761905,
+        "combined": 0.27125850340136054,
+        "confidence": "ok",
+        "sampleHome": 7,
+        "sampleAway": 6
+      }
+    },
+    {
+      "id": "mock-20-15",
+      "date": "2026-09-18T15:00:00.000Z",
+      "league": "La Liga",
+      "leagueCountry": "Spain",
+      "home": {
+        "id": 20,
+        "name": "Girona"
+      },
+      "away": {
+        "id": 15,
+        "name": "Real Betis"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 8,
+          "awaySample": 4,
+          "homeWinPct": 0.125,
+          "homeLossPct": 0.875,
+          "homeBttsPct": 0.375,
+          "awayWinPct": 0,
+          "awayLossPct": 1,
+          "awayBttsPct": 0.25
+        },
+        "away": {
+          "homeSample": 4,
+          "awaySample": 8,
+          "homeWinPct": 0.5,
+          "homeLossPct": 0.25,
+          "homeBttsPct": 0.25,
+          "awayWinPct": 0.5,
+          "awayLossPct": 0.125,
+          "awayBttsPct": 0.375
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.6875,
+        "bttsLikelihood": 0.375,
+        "combined": 0.2578125,
+        "confidence": "ok",
+        "sampleHome": 8,
+        "sampleAway": 8
+      }
+    },
+    {
+      "id": "mock-17-18",
+      "date": "2026-09-18T15:00:00.000Z",
+      "league": "La Liga",
+      "leagueCountry": "Spain",
+      "home": {
+        "id": 17,
+        "name": "Athletic Bilbao"
+      },
+      "away": {
+        "id": 18,
+        "name": "Sevilla"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 8,
+          "awaySample": 4,
+          "homeWinPct": 0.75,
+          "homeLossPct": 0,
+          "homeBttsPct": 0.875,
+          "awayWinPct": 0.25,
+          "awayLossPct": 0.5,
+          "awayBttsPct": 0.5
+        },
+        "away": {
+          "homeSample": 4,
+          "awaySample": 8,
+          "homeWinPct": 0.25,
+          "homeLossPct": 0.25,
+          "homeBttsPct": 0.75,
+          "awayWinPct": 0.625,
+          "awayLossPct": 0.375,
+          "awayBttsPct": 0.75
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.3125,
+        "bttsLikelihood": 0.8125,
+        "combined": 0.25390625,
+        "confidence": "ok",
+        "sampleHome": 8,
+        "sampleAway": 8
+      }
+    },
+    {
+      "id": "mock-11-13",
+      "date": "2026-09-18T15:00:00.000Z",
+      "league": "La Liga",
+      "leagueCountry": "Spain",
+      "home": {
+        "id": 11,
+        "name": "Real Madrid"
+      },
+      "away": {
+        "id": 13,
+        "name": "Atletico Madrid"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 4,
+          "awaySample": 8,
+          "homeWinPct": 0.25,
+          "homeLossPct": 0.25,
+          "homeBttsPct": 0.5,
+          "awayWinPct": 0.375,
+          "awayLossPct": 0.5,
+          "awayBttsPct": 0.375
+        },
+        "away": {
+          "homeSample": 8,
+          "awaySample": 4,
+          "homeWinPct": 0.625,
+          "homeLossPct": 0.375,
+          "homeBttsPct": 0.625,
+          "awayWinPct": 0.75,
+          "awayLossPct": 0.25,
+          "awayBttsPct": 0.5
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.5,
+        "bttsLikelihood": 0.5,
+        "combined": 0.25,
+        "confidence": "low",
+        "sampleHome": 4,
+        "sampleAway": 4
+      }
+    },
+    {
+      "id": "mock-36-33",
+      "date": "2026-09-21T15:00:00.000Z",
+      "league": "Serie A",
+      "leagueCountry": "Italy",
+      "home": {
+        "id": 36,
+        "name": "Lazio"
+      },
+      "away": {
+        "id": 33,
+        "name": "Juventus"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.3333333333333333,
+          "homeLossPct": 0.6666666666666666,
+          "homeBttsPct": 0.6666666666666666,
+          "awayWinPct": 0.5,
+          "awayLossPct": 0.5,
+          "awayBttsPct": 0.6666666666666666
+        },
+        "away": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.16666666666666666,
+          "homeLossPct": 0.5,
+          "homeBttsPct": 0.5,
+          "awayWinPct": 0.5,
+          "awayLossPct": 0.3333333333333333,
+          "awayBttsPct": 0.16666666666666666
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.5833333333333333,
+        "bttsLikelihood": 0.41666666666666663,
+        "combined": 0.2430555555555555,
+        "confidence": "ok",
+        "sampleHome": 6,
+        "sampleAway": 6
+      }
+    },
+    {
+      "id": "mock-49-43",
+      "date": "2026-09-20T15:00:00.000Z",
+      "league": "Ligue 1",
+      "leagueCountry": "France",
+      "home": {
+        "id": 49,
+        "name": "Strasbourg"
+      },
+      "away": {
+        "id": 43,
+        "name": "Marseille"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 5,
+          "awaySample": 7,
+          "homeWinPct": 0.8,
+          "homeLossPct": 0.2,
+          "homeBttsPct": 0.8,
+          "awayWinPct": 0.8571428571428571,
+          "awayLossPct": 0.14285714285714285,
+          "awayBttsPct": 0.5714285714285714
+        },
+        "away": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0.5714285714285714,
+          "homeLossPct": 0.2857142857142857,
+          "homeBttsPct": 0.5714285714285714,
+          "awayWinPct": 0.6,
+          "awayLossPct": 0.4,
+          "awayBttsPct": 0.4
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.4,
+        "bttsLikelihood": 0.6000000000000001,
+        "combined": 0.24000000000000005,
+        "confidence": "ok",
+        "sampleHome": 5,
+        "sampleAway": 5
+      }
+    },
+    {
+      "id": "mock-40-31",
+      "date": "2026-09-21T15:00:00.000Z",
+      "league": "Serie A",
+      "leagueCountry": "Italy",
+      "home": {
+        "id": 40,
+        "name": "Torino"
+      },
+      "away": {
+        "id": 31,
+        "name": "Inter Milan"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 4,
+          "awaySample": 8,
+          "homeWinPct": 0.5,
+          "homeLossPct": 0.25,
+          "homeBttsPct": 0.25,
+          "awayWinPct": 0.5,
+          "awayLossPct": 0.125,
+          "awayBttsPct": 0.5
+        },
+        "away": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0,
+          "homeLossPct": 1,
+          "homeBttsPct": 0.6666666666666666,
+          "awayWinPct": 0.5,
+          "awayLossPct": 0.3333333333333333,
+          "awayBttsPct": 0.8333333333333334
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.375,
+        "bttsLikelihood": 0.5416666666666667,
+        "combined": 0.20312500000000003,
+        "confidence": "low",
+        "sampleHome": 4,
+        "sampleAway": 6
+      }
+    },
+    {
+      "id": "mock-2-9",
+      "date": "2026-09-22T12:00:00.000Z",
+      "league": "Premier League",
+      "leagueCountry": "England",
+      "home": {
+        "id": 2,
+        "name": "Man City"
+      },
+      "away": {
+        "id": 9,
+        "name": "Brighton"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0.14285714285714285,
+          "homeLossPct": 0.7142857142857143,
+          "homeBttsPct": 0.2857142857142857,
+          "awayWinPct": 0.4,
+          "awayLossPct": 0.6,
+          "awayBttsPct": 0.6
+        },
+        "away": {
+          "homeSample": 9,
+          "awaySample": 3,
+          "homeWinPct": 0.4444444444444444,
+          "homeLossPct": 0.2222222222222222,
+          "homeBttsPct": 0.5555555555555556,
+          "awayWinPct": 0,
+          "awayLossPct": 1,
+          "awayBttsPct": 0.6666666666666666
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.35714285714285715,
+        "bttsLikelihood": 0.47619047619047616,
+        "combined": 0.17006802721088435,
+        "confidence": "low",
+        "sampleHome": 7,
+        "sampleAway": 3
+      }
+    },
+    {
+      "id": "mock-10-7",
+      "date": "2026-09-22T12:00:00.000Z",
+      "league": "Premier League",
+      "leagueCountry": "England",
+      "home": {
+        "id": 10,
+        "name": "West Ham"
+      },
+      "away": {
+        "id": 7,
+        "name": "Newcastle"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.5,
+          "homeLossPct": 0.5,
+          "homeBttsPct": 0.3333333333333333,
+          "awayWinPct": 0.3333333333333333,
+          "awayLossPct": 0.5,
+          "awayBttsPct": 0
+        },
+        "away": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.5,
+          "homeLossPct": 0.3333333333333333,
+          "homeBttsPct": 0.6666666666666666,
+          "awayWinPct": 0.8333333333333334,
+          "awayLossPct": 0.16666666666666666,
+          "awayBttsPct": 0.16666666666666666
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.6666666666666667,
+        "bttsLikelihood": 0.25,
+        "combined": 0.16666666666666669,
+        "confidence": "ok",
+        "sampleHome": 6,
+        "sampleAway": 6
+      }
+    },
+    {
+      "id": "mock-24-23",
+      "date": "2026-09-20T15:00:00.000Z",
+      "league": "Bundesliga",
+      "leagueCountry": "Germany",
+      "home": {
+        "id": 24,
+        "name": "Borussia Dortmund"
+      },
+      "away": {
+        "id": 23,
+        "name": "RB Leipzig"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 4,
+          "awaySample": 8,
+          "homeWinPct": 0.25,
+          "homeLossPct": 0.5,
+          "homeBttsPct": 0,
+          "awayWinPct": 0.5,
+          "awayLossPct": 0.5,
+          "awayBttsPct": 0.375
+        },
+        "away": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.3333333333333333,
+          "homeLossPct": 0.16666666666666666,
+          "homeBttsPct": 0.6666666666666666,
+          "awayWinPct": 0.8333333333333334,
+          "awayLossPct": 0,
+          "awayBttsPct": 0.5
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.6666666666666667,
+        "bttsLikelihood": 0.25,
+        "combined": 0.16666666666666669,
+        "confidence": "low",
+        "sampleHome": 4,
+        "sampleAway": 6
+      }
+    },
+    {
+      "id": "mock-46-41",
+      "date": "2026-09-20T15:00:00.000Z",
+      "league": "Ligue 1",
+      "leagueCountry": "France",
+      "home": {
+        "id": 46,
+        "name": "Nice"
+      },
+      "away": {
+        "id": 41,
+        "name": "Paris Saint-Germain"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.3333333333333333,
+          "homeLossPct": 0.3333333333333333,
+          "homeBttsPct": 0.3333333333333333,
+          "awayWinPct": 0.3333333333333333,
+          "awayLossPct": 0.3333333333333333,
+          "awayBttsPct": 0.16666666666666666
+        },
+        "away": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.3333333333333333,
+          "homeLossPct": 0.3333333333333333,
+          "homeBttsPct": 0.16666666666666666,
+          "awayWinPct": 0.3333333333333333,
+          "awayLossPct": 0.3333333333333333,
+          "awayBttsPct": 0.6666666666666666
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.3333333333333333,
+        "bttsLikelihood": 0.5,
+        "combined": 0.16666666666666666,
+        "confidence": "ok",
+        "sampleHome": 6,
+        "sampleAway": 6
+      }
+    },
+    {
+      "id": "mock-26-21",
+      "date": "2026-09-20T15:00:00.000Z",
+      "league": "Bundesliga",
+      "leagueCountry": "Germany",
+      "home": {
+        "id": 26,
+        "name": "VfB Stuttgart"
+      },
+      "away": {
+        "id": 21,
+        "name": "Bayern Munich"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.3333333333333333,
+          "homeLossPct": 0.3333333333333333,
+          "homeBttsPct": 0.5,
+          "awayWinPct": 0.5,
+          "awayLossPct": 0.16666666666666666,
+          "awayBttsPct": 0.5
+        },
+        "away": {
+          "homeSample": 4,
+          "awaySample": 8,
+          "homeWinPct": 0.75,
+          "homeLossPct": 0.25,
+          "homeBttsPct": 1,
+          "awayWinPct": 0.375,
+          "awayLossPct": 0.5,
+          "awayBttsPct": 0.375
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.35416666666666663,
+        "bttsLikelihood": 0.4375,
+        "combined": 0.15494791666666666,
+        "confidence": "ok",
+        "sampleHome": 6,
+        "sampleAway": 8
+      }
+    },
+    {
+      "id": "mock-22-28",
+      "date": "2026-09-20T15:00:00.000Z",
+      "league": "Bundesliga",
+      "leagueCountry": "Germany",
+      "home": {
+        "id": 22,
+        "name": "Bayer Leverkusen"
+      },
+      "away": {
+        "id": 28,
+        "name": "Union Berlin"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0.42857142857142855,
+          "homeLossPct": 0.2857142857142857,
+          "homeBttsPct": 0.42857142857142855,
+          "awayWinPct": 0.2,
+          "awayLossPct": 0.6,
+          "awayBttsPct": 0.8
+        },
+        "away": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0,
+          "homeLossPct": 0.8571428571428571,
+          "homeBttsPct": 0.42857142857142855,
+          "awayWinPct": 0,
+          "awayLossPct": 0.2,
+          "awayBttsPct": 0.8
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.14285714285714285,
+        "bttsLikelihood": 0.6142857142857143,
+        "combined": 0.08775510204081632,
+        "confidence": "ok",
+        "sampleHome": 7,
+        "sampleAway": 5
+      }
+    },
+    {
+      "id": "mock-4-5",
+      "date": "2026-09-22T12:00:00.000Z",
+      "league": "Premier League",
+      "leagueCountry": "England",
+      "home": {
+        "id": 4,
+        "name": "Chelsea"
+      },
+      "away": {
+        "id": 5,
+        "name": "Man United"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 5,
+          "awaySample": 7,
+          "homeWinPct": 0.6,
+          "homeLossPct": 0.2,
+          "homeBttsPct": 0.8,
+          "awayWinPct": 0.7142857142857143,
+          "awayLossPct": 0,
+          "awayBttsPct": 0.7142857142857143
+        },
+        "away": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0,
+          "homeLossPct": 0.5714285714285714,
+          "homeBttsPct": 0.8571428571428571,
+          "awayWinPct": 0,
+          "awayLossPct": 0.6,
+          "awayBttsPct": 0.6
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.1,
+        "bttsLikelihood": 0.7,
+        "combined": 0.06999999999999999,
+        "confidence": "ok",
+        "sampleHome": 5,
+        "sampleAway": 5
+      }
+    },
+    {
+      "id": "mock-6-1",
+      "date": "2026-09-22T12:00:00.000Z",
+      "league": "Premier League",
+      "leagueCountry": "England",
+      "home": {
+        "id": 6,
+        "name": "Tottenham"
+      },
+      "away": {
+        "id": 1,
+        "name": "Arsenal"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 3,
+          "awaySample": 9,
+          "homeWinPct": 0.6666666666666666,
+          "homeLossPct": 0,
+          "homeBttsPct": 0.3333333333333333,
+          "awayWinPct": 0.2222222222222222,
+          "awayLossPct": 0.6666666666666666,
+          "awayBttsPct": 0.6666666666666666
+        },
+        "away": {
+          "homeSample": 2,
+          "awaySample": 10,
+          "homeWinPct": 0.5,
+          "homeLossPct": 0.5,
+          "homeBttsPct": 0.5,
+          "awayWinPct": 0.3,
+          "awayLossPct": 0.3,
+          "awayBttsPct": 0.5
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.15,
+        "bttsLikelihood": 0.41666666666666663,
+        "combined": 0.06249999999999999,
+        "confidence": "low",
+        "sampleHome": 3,
+        "sampleAway": 10
+      }
+    },
+    {
+      "id": "mock-16-19",
+      "date": "2026-09-18T15:00:00.000Z",
+      "league": "La Liga",
+      "leagueCountry": "Spain",
+      "home": {
+        "id": 16,
+        "name": "Villarreal"
+      },
+      "away": {
+        "id": 19,
+        "name": "Valencia"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.6666666666666666,
+          "homeLossPct": 0.16666666666666666,
+          "homeBttsPct": 0.16666666666666666,
+          "awayWinPct": 0.8333333333333334,
+          "awayLossPct": 0.16666666666666666,
+          "awayBttsPct": 0.5
+        },
+        "away": {
+          "homeSample": 5,
+          "awaySample": 7,
+          "homeWinPct": 0,
+          "homeLossPct": 1,
+          "homeBttsPct": 0.2,
+          "awayWinPct": 0.14285714285714285,
+          "awayLossPct": 0.5714285714285714,
+          "awayBttsPct": 0.42857142857142855
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.15476190476190477,
+        "bttsLikelihood": 0.2976190476190476,
+        "combined": 0.046060090702947844,
+        "confidence": "ok",
+        "sampleHome": 6,
+        "sampleAway": 7
+      }
+    },
+    {
+      "id": "mock-38-39",
+      "date": "2026-09-21T15:00:00.000Z",
+      "league": "Serie A",
+      "leagueCountry": "Italy",
+      "home": {
+        "id": 38,
+        "name": "Fiorentina"
+      },
+      "away": {
+        "id": 39,
+        "name": "Bologna"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0.5714285714285714,
+          "homeLossPct": 0.2857142857142857,
+          "homeBttsPct": 0.2857142857142857,
+          "awayWinPct": 0.6,
+          "awayLossPct": 0,
+          "awayBttsPct": 0.2
+        },
+        "away": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.16666666666666666,
+          "homeLossPct": 0.3333333333333333,
+          "homeBttsPct": 0.3333333333333333,
+          "awayWinPct": 0,
+          "awayLossPct": 1,
+          "awayBttsPct": 0.3333333333333333
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.14285714285714285,
+        "bttsLikelihood": 0.30952380952380953,
+        "combined": 0.04421768707482993,
+        "confidence": "ok",
+        "sampleHome": 7,
+        "sampleAway": 6
+      }
+    },
+    {
+      "id": "mock-50-48",
+      "date": "2026-09-20T15:00:00.000Z",
+      "league": "Ligue 1",
+      "leagueCountry": "France",
+      "home": {
+        "id": 50,
+        "name": "Toulouse"
+      },
+      "away": {
+        "id": 48,
+        "name": "Rennes"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0.5714285714285714,
+          "homeLossPct": 0.2857142857142857,
+          "homeBttsPct": 0.2857142857142857,
+          "awayWinPct": 0.4,
+          "awayLossPct": 0.6,
+          "awayBttsPct": 0.2
+        },
+        "away": {
+          "homeSample": 6,
+          "awaySample": 6,
+          "homeWinPct": 0.16666666666666666,
+          "homeLossPct": 0.6666666666666666,
+          "homeBttsPct": 0.5,
+          "awayWinPct": 0,
+          "awayLossPct": 0.16666666666666666,
+          "awayBttsPct": 0.3333333333333333
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.14285714285714285,
+        "bttsLikelihood": 0.30952380952380953,
+        "combined": 0.04421768707482993,
+        "confidence": "ok",
+        "sampleHome": 7,
+        "sampleAway": 6
+      }
+    },
+    {
+      "id": "mock-3-8",
+      "date": "2026-09-22T12:00:00.000Z",
+      "league": "Premier League",
+      "leagueCountry": "England",
+      "home": {
+        "id": 3,
+        "name": "Liverpool"
+      },
+      "away": {
+        "id": 8,
+        "name": "Aston Villa"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0.42857142857142855,
+          "homeLossPct": 0.42857142857142855,
+          "homeBttsPct": 0.14285714285714285,
+          "awayWinPct": 0.2,
+          "awayLossPct": 0.4,
+          "awayBttsPct": 0.8
+        },
+        "away": {
+          "homeSample": 8,
+          "awaySample": 4,
+          "homeWinPct": 0.625,
+          "homeLossPct": 0.25,
+          "homeBttsPct": 0.375,
+          "awayWinPct": 0.75,
+          "awayLossPct": 0.25,
+          "awayBttsPct": 0
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.5892857142857143,
+        "bttsLikelihood": 0.07142857142857142,
+        "combined": 0.042091836734693876,
+        "confidence": "low",
+        "sampleHome": 7,
+        "sampleAway": 4
+      }
+    },
+    {
+      "id": "mock-45-42",
+      "date": "2026-09-20T15:00:00.000Z",
+      "league": "Ligue 1",
+      "leagueCountry": "France",
+      "home": {
+        "id": 45,
+        "name": "Lille"
+      },
+      "away": {
+        "id": 42,
+        "name": "Monaco"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 5,
+          "awaySample": 7,
+          "homeWinPct": 0.2,
+          "homeLossPct": 0,
+          "homeBttsPct": 0.4,
+          "awayWinPct": 0.14285714285714285,
+          "awayLossPct": 0.5714285714285714,
+          "awayBttsPct": 0.42857142857142855
+        },
+        "away": {
+          "homeSample": 5,
+          "awaySample": 7,
+          "homeWinPct": 0.4,
+          "homeLossPct": 0.4,
+          "homeBttsPct": 0.4,
+          "awayWinPct": 0.14285714285714285,
+          "awayLossPct": 0.5714285714285714,
+          "awayBttsPct": 0.7142857142857143
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.07142857142857142,
+        "bttsLikelihood": 0.5571428571428572,
+        "combined": 0.03979591836734694,
+        "confidence": "ok",
+        "sampleHome": 5,
+        "sampleAway": 7
+      }
+    },
+    {
+      "id": "mock-32-37",
+      "date": "2026-09-21T15:00:00.000Z",
+      "league": "Serie A",
+      "leagueCountry": "Italy",
+      "home": {
+        "id": 32,
+        "name": "AC Milan"
+      },
+      "away": {
+        "id": 37,
+        "name": "Atalanta"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 9,
+          "awaySample": 3,
+          "homeWinPct": 0.5555555555555556,
+          "homeLossPct": 0.1111111111111111,
+          "homeBttsPct": 0.1111111111111111,
+          "awayWinPct": 0,
+          "awayLossPct": 0.6666666666666666,
+          "awayBttsPct": 0.3333333333333333
+        },
+        "away": {
+          "homeSample": 5,
+          "awaySample": 7,
+          "homeWinPct": 0.4,
+          "homeLossPct": 0.4,
+          "homeBttsPct": 0.4,
+          "awayWinPct": 0.2857142857142857,
+          "awayLossPct": 0.2857142857142857,
+          "awayBttsPct": 0.2857142857142857
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.1984126984126984,
+        "bttsLikelihood": 0.1984126984126984,
+        "combined": 0.03936759889140841,
+        "confidence": "ok",
+        "sampleHome": 9,
+        "sampleAway": 7
+      }
+    },
+    {
+      "id": "mock-25-30",
+      "date": "2026-09-20T15:00:00.000Z",
+      "league": "Bundesliga",
+      "leagueCountry": "Germany",
+      "home": {
+        "id": 25,
+        "name": "Eintracht Frankfurt"
+      },
+      "away": {
+        "id": 30,
+        "name": "Werder Bremen"
+      },
+      "stats": {
+        "home": {
+          "homeSample": 7,
+          "awaySample": 5,
+          "homeWinPct": 0,
+          "homeLossPct": 0.42857142857142855,
+          "homeBttsPct": 0.2857142857142857,
+          "awayWinPct": 0.4,
+          "awayLossPct": 0.4,
+          "awayBttsPct": 0.2
+        },
+        "away": {
+          "homeSample": 8,
+          "awaySample": 4,
+          "homeWinPct": 0.5,
+          "homeLossPct": 0.375,
+          "homeBttsPct": 0.5,
+          "awayWinPct": 0,
+          "awayLossPct": 0.5,
+          "awayBttsPct": 0
+        }
+      },
+      "score": {
+        "awayWinLikelihood": 0.21428571428571427,
+        "bttsLikelihood": 0.14285714285714285,
+        "combined": 0.03061224489795918,
+        "confidence": "low",
+        "sampleHome": 7,
+        "sampleAway": 4
+      }
+    }
+  ]
+}

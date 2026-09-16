@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>European Football — Away Win + BTTS Tracker</title>
+<meta name="description" content="Upcoming European football fixtures ranked by the combined likelihood of an away win and both teams scoring." />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Away Win + BTTS Tracker</h1>
+      <div class="crumbs"><a href="../">← TopTraders</a> · European football</div>
+    </div>
+  </header>
+
+  <div class="meta-row" id="metaRow"></div>
+  <div class="disclaimer">
+    Public/derived football statistics, shown for information only — not betting advice.
+    Ranking is a simplified estimate from each team's recent home/away record (see
+    <a href="#methodology">methodology</a>), not a bookmaker probability.
+  </div>
+
+  <section class="hero" id="hero" hidden>
+    <div class="hero-label">Best match</div>
+    <div class="hero-match" id="heroMatch"></div>
+    <div class="hero-figures" id="heroFigures"></div>
+  </section>
+
+  <div class="controls">
+    <label>League
+      <select id="leagueFilter"><option value="">All leagues</option></select>
+    </label>
+    <label>
+      <input type="checkbox" id="hideLowSample" />
+      Hide low-sample fixtures
+    </label>
+    <label>Search
+      <input type="text" id="teamSearch" placeholder="Team name…" />
+    </label>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Kickoff</th>
+        <th>League</th>
+        <th>Fixture</th>
+        <th>Away win</th>
+        <th>BTTS</th>
+        <th>Combined</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="empty-state" id="emptyState" hidden>No fixtures match these filters.</div>
+
+  <footer>
+    <p id="methodology">
+      <strong>Methodology.</strong> For each fixture, <em>away-win likelihood</em> is the
+      average of the home team's home-loss rate and the away team's away-win rate over
+      their recent matches; <em>BTTS likelihood</em> is the average of the home team's
+      home-BTTS rate and the away team's away-BTTS rate. <em>Combined</em> multiplies the
+      two, treating them as independent — a simplification, not a true joint probability.
+      Fixtures where either team has fewer than 5 recent matches on record are flagged
+      "low sample".
+    </p>
+    <p>Built independently of the TopTraders crypto dashboard — no shared code or data.</p>
+  </footer>
+</div>
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
