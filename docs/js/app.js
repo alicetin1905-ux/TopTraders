@@ -779,7 +779,14 @@ function renderTable(rows) {
 
   if (!rows.length) {
     const tr = el('tr');
-    const td = el('td', 'empty', 'No traders match these filters. Try lowering the minimum size.');
+    // The generic "no matches" message was actively misleading with an empty
+    // watchlist filter on: it pointed at the size filter while the real cause
+    // -- Watchlist is active and nothing is starred -- went unmentioned, so
+    // the dashboard read as broken (every tile showing $0) rather than filtered.
+    const msg = (state.watchOnly && !state.watch.size)
+      ? 'Your watchlist is empty. Star a trader (the ☆ next to its rank) to add one, or turn off Watchlist above to see everyone.'
+      : 'No traders match these filters. Try lowering the minimum size.';
+    const td = el('td', 'empty', msg);
     td.colSpan = 9;
     tr.append(td);
     tb.append(tr);
@@ -906,6 +913,9 @@ function renderFooter() {
 function render() {
   $('#watchOnly').setAttribute('aria-pressed', state.watchOnly ? 'true' : 'false');
   $('#watchCount').textContent = state.watch.size ? String(state.watch.size) : '';
+  // Surfaced above the tiles, which would otherwise be the first thing seen
+  // and read as "the app has no data" rather than "the filter has no match".
+  $('#watchlistBanner').hidden = !(state.watchOnly && !state.watch.size);
   const rows = visibleTraders();
   renderTiles(rows);
   if (state.feedMode === 'live') renderTape(); else renderFeed();
@@ -947,6 +957,11 @@ function wire() {
   $('#watchOnly').addEventListener('click', () => {
     state.watchOnly = !state.watchOnly;
     writeStore('tt-watch-only', state.watchOnly);
+    render();
+  });
+  $('#clearWatchOnly').addEventListener('click', () => {
+    state.watchOnly = false;
+    writeStore('tt-watch-only', false);
     render();
   });
   $('#notifyBtn').addEventListener('click', enableNotifications);
