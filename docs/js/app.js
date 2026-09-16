@@ -23,6 +23,8 @@ const SNAPSHOT_STALE_MS = 45 * 60_000;
 // notional, which is the bulk of everything tracked.
 const TAPE_TRADERS = 30;
 const TAPE_CAP = 300;
+// Don't buzz for every small fill from a busy trader.
+const NOTIFY_MIN_NOTIONAL = 25_000;
 
 const state = {
   traders: [],
@@ -42,6 +44,9 @@ const state = {
   tape: [],
   stream: null,
   streamStatus: null,
+  watch: new Set(),
+  watchOnly: false,
+  notify: false,
   lastPrice: 0,
   priceError: null,
   error: null,
@@ -158,6 +163,7 @@ async function refreshTrader(trader) {
 function visibleTraders() {
   const q = state.search.trim().toLowerCase();
   let rows = state.traders
+    .filter((t) => (!state.watchOnly || state.watch.has(t.id)))
     .filter((t) => state.venueFilter.has(t.venue))
     .map(repriced)
     .filter((t) => t.totalNotional >= state.minSize);
@@ -402,11 +408,13 @@ function renderLiquidation(rows) {
 /** Open the live fill stream over the largest Hyperliquid books. */
 function startTape() {
   if (state.stream) return;
-  const addresses = state.traders
-    .filter((t) => t.venue === 'hyperliquid')
-    .sort((a, b) => b.totalNotional - a.totalNotional)
-    .slice(0, TAPE_TRADERS)
-    .map((t) => t.address);
+  const hl = state.traders.filter((t) => t.venue === 'hyperliquid');
+  // Hyperliquid only allows a handful of tracked users, so spend those slots on
+  // starred traders first and fill the rest with the largest books.
+  const starred = hl.filter((t) => state.watch.has(t.address));
+  const rest = hl.filter((t) => !state.watch.has(t.address))
+    .sort((a, b) => b.totalNotional - a.totalNotional);
+  const addresses = [...starred, ...rest].slice(0, TAPE_TRADERS).map((t) => t.address);
   if (!addresses.length) return;
 
   // Address -> display name, so the tape can show what the table shows.
@@ -419,6 +427,7 @@ function startTape() {
       state.tape = [...fills, ...state.tape]
         .sort((a, b) => b.ts - a.ts)
         .slice(0, TAPE_CAP);
+      maybeNotifyFills(fills);
       if (state.feedMode === 'live') renderTape();
     },
     onStatus: (st) => { state.streamStatus = st; if (state.feedMode === 'live') renderTape(); },
@@ -514,6 +523,125 @@ function setFeedMode(mode) {
     + 'so the other venues appear under snapshot changes. The tape runs only while this page is open.';
   try { localStorage.setItem('tt-feed-mode', mode); } catch { /* private mode */ }
   if (live) { startTape(); renderTape(); } else { render(); }
+}
+
+/* ------------------------- watchlist & notifications ---------------------- */
+
+const readStore = (k, fallback) => {
+  try { const v = localStorage.getItem(k); return v === null ? fallback : JSON.parse(v); }
+  catch { return fallback; }
+};
+const writeStore = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } };
+
+function loadWatchlist() {
+  state.watch = new Set(readStore('tt-watch', []));
+  state.watchOnly = readStore('tt-watch-only', false);
+  state.notify = readStore('tt-notify', false) && notifyPermission() === 'granted';
+}
+
+function toggleWatch(id) {
+  if (state.watch.has(id)) state.watch.delete(id); else state.watch.add(id);
+  writeStore('tt-watch', [...state.watch]);
+  // Watched traders take priority in the tape's limited subscription slots.
+  restartTape();
+  render();
+}
+
+const notifyPermission = () => (typeof Notification === 'undefined' ? 'unsupported' : Notification.permission);
+
+/** True once the page is running as an installed app (iOS requires this). */
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+const isIos = () => /iphone|ipad|ipod/i.test(navigator.userAgent)
+  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+async function enableNotifications() {
+  if (notifyPermission() === 'unsupported') {
+    showInstallHint('This browser does not support notifications.');
+    return;
+  }
+  // On iOS, asking from a Safari tab is denied outright; it only works once the
+  // app has been added to the Home Screen.
+  if (isIos() && !isStandalone()) {
+    showInstallHint();
+    return;
+  }
+  let perm = notifyPermission();
+  if (perm === 'default') {
+    try { perm = await Notification.requestPermission(); } catch { perm = 'denied'; }
+  }
+  if (perm !== 'granted') {
+    showInstallHint(perm === 'denied'
+      ? 'Notifications are blocked for this site — enable them in your browser settings.'
+      : undefined);
+    state.notify = false;
+  } else {
+    state.notify = true;
+    // The fill stream is what alerts are derived from, so it has to run even
+    // while the snapshot view is on screen.
+    startTape();
+    notify('Alerts on', 'You will be told when a starred trader trades.');
+  }
+  writeStore('tt-notify', state.notify);
+  syncNotifyButton();
+}
+
+/** Notifications go through the service worker: iOS has no Notification ctor. */
+async function notify(title, body, tag) {
+  if (!state.notify || notifyPermission() !== 'granted') return;
+  try {
+    const reg = await navigator.serviceWorker?.ready;
+    if (reg?.showNotification) {
+      await reg.showNotification(title, {
+        body, tag: tag || 'toptraders', icon: './icons/icon-192.png', badge: './icons/icon-192.png',
+      });
+    }
+  } catch { /* notification is best-effort */ }
+}
+
+function syncNotifyButton() {
+  const b = $('#notifyBtn');
+  const on = state.notify && notifyPermission() === 'granted';
+  b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  b.firstElementChild.textContent = on ? '\u25CF' : '\u25CB';
+  b.title = on ? 'Alerts on for starred traders' : 'Alert me when a starred trader trades';
+}
+
+function showInstallHint(message) {
+  const hint = $('#installHint');
+  $('#installHow').textContent = message
+    || (isIos()
+      ? 'In Safari: Share \u2192 Add to Home Screen, then open it from there and tap Alerts again.'
+      : 'Install this app from your browser menu, then tap Alerts again.');
+  hint.hidden = false;
+}
+
+/** Fire an alert for a watched trader's fill, if it clears the noise floor. */
+function maybeNotifyFills(fills) {
+  if (!state.notify || !state.watch.size) return;
+  for (const f of fills) {
+    if (f.isSnapshot) continue;                       // backfill, not news
+    if (!state.watch.has(f.address)) continue;
+    if ((f.value || 0) < NOTIFY_MIN_NOTIONAL) continue;
+    const pnl = f.closedPnl ? ` · ${usd(f.closedPnl, { compact: true, sign: true })}` : '';
+    notify(`${shortAddr(f.trader)} ${f.dir} ${f.coin}`,
+      `${qty(f.size)} @ ${price(f.price)} · ${usd(f.value, { compact: true })}${pnl}`,
+      `fill-${f.key}`);
+  }
+}
+
+function restartTape() {
+  if (!state.stream) return;
+  state.stream.stop();
+  state.stream = null;
+  if (state.feedMode === 'live') startTape();
+}
+
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('./sw.js').catch(() => { /* offline support is optional */ });
 }
 
 function renderCrowd(rows) {
@@ -667,7 +795,15 @@ function renderTable(rows) {
     tr.setAttribute('aria-expanded', open ? 'true' : 'false');
 
     const c0 = el('td', 'rank');
-    c0.append(el('span', 'caret', '›'));
+    const starred = state.watch.has(t.id);
+    const star = el('button', 'starbtn', starred ? '★' : '☆');
+    star.type = 'button';
+    star.setAttribute('aria-pressed', starred ? 'true' : 'false');
+    star.setAttribute('aria-label', `${starred ? 'Unstar' : 'Star'} ${t.label || t.address}`);
+    // Stop the click bubbling to the row, which would toggle the detail panel.
+    star.addEventListener('click', (e) => { e.stopPropagation(); toggleWatch(t.id); });
+    c0.append(star, el('span', 'caret', '›'));
+    if (starred) tr.classList.add('watched');
     tr.append(c0);
 
     const who = el('td', 'l');
@@ -768,6 +904,8 @@ function renderFooter() {
 }
 
 function render() {
+  $('#watchOnly').setAttribute('aria-pressed', state.watchOnly ? 'true' : 'false');
+  $('#watchCount').textContent = state.watch.size ? String(state.watch.size) : '';
   const rows = visibleTraders();
   renderTiles(rows);
   if (state.feedMode === 'live') renderTape(); else renderFeed();
@@ -806,6 +944,13 @@ function wire() {
   $('#liqCoin').addEventListener('change', (e) => { state.liqCoin = e.target.value; render(); });
   $('#modeSnapshot').addEventListener('click', () => setFeedMode('snapshot'));
   $('#modeLive').addEventListener('click', () => setFeedMode('live'));
+  $('#watchOnly').addEventListener('click', () => {
+    state.watchOnly = !state.watchOnly;
+    writeStore('tt-watch-only', state.watchOnly);
+    render();
+  });
+  $('#notifyBtn').addEventListener('click', enableNotifications);
+  $('#dismissInstall').addEventListener('click', () => { $('#installHint').hidden = true; });
   $('#refreshBtn').addEventListener('click', async () => {
     $('#refreshBtn').disabled = true;
     try { await loadSnapshot(); await loadChanges(); await pollPrices(); } catch (e) { state.error = e.message; }
@@ -837,8 +982,11 @@ function wire() {
 }
 
 async function boot() {
+  registerServiceWorker();
+  loadWatchlist();
   buildChips();
   wire();
+  syncNotifyButton();
   try {
     await loadSnapshot();
     await loadChanges();
@@ -852,6 +1000,8 @@ async function boot() {
   let savedMode = null;
   try { savedMode = localStorage.getItem('tt-feed-mode'); } catch { /* private mode */ }
   setFeedMode(savedMode === 'live' ? 'live' : 'snapshot');
+  // Alerts survive a reload, so reopen the stream they depend on.
+  if (state.notify) startTape();
   await loadGmxContext();
   await pollPrices();
   setInterval(pollPrices, PRICE_POLL_MS);

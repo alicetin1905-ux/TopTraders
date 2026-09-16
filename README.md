@@ -77,6 +77,38 @@ rounding nudge sizes constantly.
 `scripts/backfill-changes.mjs` seeds the feed from the snapshot history already
 in git, so it is populated on first deploy instead of empty for hours.
 
+## Install it, and watch specific traders
+
+The dashboard is a PWA: a manifest, a service worker (network-first, so a deploy
+is never masked by a stale cache) and icons rendered straight from the app's own
+colour language. On iOS, **Share → Add to Home Screen** gives it a real app icon,
+standalone chrome and offline access to the last data you loaded.
+
+Star any trader to build a watchlist. It persists locally, filters the table,
+and — because Hyperliquid only permits a handful of tracked users per socket —
+**starred traders get the scarce live-stream slots first**, with the largest
+books filling whatever is left.
+
+### What alerts can and cannot do
+
+With the app installed and Alerts on, a starred trader's fill above $25k raises
+a notification. This works while the app is open or recently backgrounded, and
+it is driven by the live fill stream, so it does not matter which activity view
+you are looking at.
+
+Two limits worth stating plainly:
+
+- **iOS only allows this for a Home Screen app.** Asking for permission from a
+  Safari tab is denied outright, so the app detects that case and tells you how
+  to install rather than appearing to fail. Requires iOS 16.4+.
+- **Nothing arrives when the app is fully closed.** True background push needs a
+  server holding push subscriptions and signing with a VAPID key; GitHub Pages
+  is static and cannot. The service worker already implements the `push`
+  handler, so pointing it at a push service later requires no change here. If
+  you want phone alerts with the app closed today, the simplest route is a
+  webhook: have the refresh workflow POST watched-trader changes to
+  [ntfy.sh](https://ntfy.sh), Telegram or Discord.
+
 ## The live trade tape
 
 The snapshot pipeline can only see *net change between ticks*, and GitHub

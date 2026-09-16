@@ -54,6 +54,10 @@
 
 * { box-sizing: border-box; }
 
+/* A class with its own `display` beats the UA rule for [hidden], which silently
+   left the snapshot feed and the live tape both on screen at once. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   background: var(--page);
@@ -401,3 +405,29 @@ footer a { color: var(--text-2); }
 .tstats .v3 { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .tstats .tlink { margin-left: auto; font-size: 11px; color: var(--text-2); white-space: nowrap; }
 .tstats .tlink:hover { color: var(--text); }
+
+/* -------------------------- watchlist & alerts ---------------------------- */
+
+.star { color: var(--muted); font-size: 12px; line-height: 1; }
+.chip[aria-pressed="true"] .star { color: var(--warn); }
+.wcount { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Star sits in the rank cell so it never shifts the trader column. */
+.starbtn {
+  background: none; border: 0; cursor: pointer; padding: 0 2px; line-height: 1;
+  color: var(--axis); font-size: 13px;
+}
+.starbtn:hover { color: var(--warn); }
+.starbtn[aria-pressed="true"] { color: var(--warn); }
+.starbtn:focus-visible { outline: 2px solid var(--long); outline-offset: 2px; border-radius: 3px; }
+
+tr.trader.watched > td:first-child { box-shadow: inset 2px 0 0 var(--warn); }
+
+.install-hint {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--warn); border-radius: var(--radius);
+  padding: 11px 14px; margin-top: 18px; font-size: 12px; color: var(--text-2);
+}
+.install-hint strong { color: var(--text); }
+.install-hint .btn { margin-left: auto; }

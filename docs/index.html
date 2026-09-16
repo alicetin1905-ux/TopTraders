@@ -6,6 +6,15 @@
 <title>TopTraders — live positions across perp exchanges</title>
 <meta name="description" content="Live dashboard tracking top traders' open positions, PnL, entry price, notional value, margin and leverage across Hyperliquid, GMX v2 and OKX.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0d0d0d">
+<!-- iOS only treats this as an installable app via Share > Add to Home Screen,
+     and only then will it grant notification permission. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TopTraders">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -42,6 +51,12 @@
       <option value="pnlMonth">Sort: 30d realised PnL</option>
       <option value="positions">Sort: position count</option>
     </select>
+    <button class="chip" id="watchOnly" type="button" aria-pressed="false" title="Show only starred traders">
+      <span class="star">★</span> Watchlist <span class="wcount" id="watchCount"></span>
+    </button>
+    <button class="chip" id="notifyBtn" type="button" aria-pressed="false" title="Alert me when a starred trader trades">
+      <span aria-hidden="true">○</span> Alerts
+    </button>
     <select id="minSize" aria-label="Minimum open notional">
       <option value="0" selected>Any size</option>
       <option value="100000">Min $100K</option>
@@ -118,6 +133,12 @@
     </div>
   </section>
 
+  <div class="install-hint" id="installHint" hidden>
+    <strong>Add to Home Screen</strong> to get alerts when a starred trader trades.
+    <span id="installHow"></span>
+    <button class="btn" id="dismissInstall" type="button">Dismiss</button>
+  </div>
+
   <footer>
     <div class="cols">
       <div>
@@ -128,6 +149,10 @@
           and mid prices, so PnL, notional value and ROE stay current between snapshots.
         </p>
         <p id="metaLine"></p>
+        <p><strong>Alerts:</strong> add this to your Home Screen, then turn on Alerts to be
+        told when a starred trader trades. Notifications arrive while the app is open or
+        recently backgrounded. Delivery when it is fully closed needs a push service holding
+        subscriptions, which static hosting cannot provide — see the README for that option.</p>
       </div>
       <div>
         <h3>Coverage</h3>
